@@ -1,0 +1,6 @@
+{
+  "name": "Barcode Label Studio & Scanner",
+  "description": "Ứng dụng thiết kế, in tem mã vạch sản phẩm và tích hợp quét mã vạch bằng camera sau tiện lợi.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
