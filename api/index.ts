@@ -83,6 +83,11 @@ async function fetchTotalCount(): Promise<number> {
   return data.count as number;
 }
 
+// ── In-memory cache (survives within warm instance) ────────────────
+
+let cachedProducts: Product[] | null = null;
+let cachedMeta: SyncResult | null = null;
+
 // ── Express App ────────────────────────────────────────────────────
 
 const app = express();
@@ -96,18 +101,24 @@ app.use((_req, res, next) => {
 });
 
 app.get('/api/sapo/products', async (_req, res) => {
+  // Return from memory cache first (instant)
+  if (cachedProducts) return res.json(cachedProducts);
+  // Fall back to /tmp file (same warm instance)
   try {
     const raw = await fs.readFile(PRODUCTS_FILE, 'utf-8');
-    res.json(JSON.parse(raw));
+    cachedProducts = JSON.parse(raw);
+    res.json(cachedProducts);
   } catch {
     res.json([]);
   }
 });
 
 app.get('/api/sapo/meta', async (_req, res) => {
+  if (cachedMeta) return res.json(cachedMeta);
   try {
     const raw = await fs.readFile(META_FILE, 'utf-8');
-    res.json(JSON.parse(raw));
+    cachedMeta = JSON.parse(raw);
+    res.json(cachedMeta);
   } catch {
     res.json({ count: 0, lastUpdated: null });
   }
@@ -169,6 +180,9 @@ app.post('/api/sapo/sync', async (_req, res) => {
     await fs.writeFile(META_FILE, JSON.stringify({ count: allProducts.length, lastUpdated }), 'utf-8');
 
     const result: SyncResult = { count: allProducts.length, lastUpdated };
+    // Populate memory cache so GET /api/sapo/products returns instantly
+    cachedProducts = allProducts;
+    cachedMeta = result;
     console.log(`[sync] Done! ${result.count} products synced.`);
     res.json(result);
   } catch (err: any) {
