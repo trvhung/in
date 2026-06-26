@@ -180,6 +180,15 @@ export function ProductList({
             <Layers className="w-4.5 h-4.5 text-blue-600" />
             Chọn nhiều
           </button>
+
+          {/* Quét mã vạch button */}
+          <button
+            onClick={onOpenScanner}
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold active:scale-98 transition-all flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
+          >
+            <Camera className="w-4.5 h-4.5" />
+            Quét mã vạch
+          </button>
         </div>
       </div>
 

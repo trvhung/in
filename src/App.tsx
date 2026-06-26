@@ -329,20 +329,11 @@ export default function App() {
                 <h1 className="font-bold text-gray-900 text-sm md:text-base leading-tight tracking-tight">
                   In Tem Mã Vạch & Nhãn Giá
                 </h1>
-                <p className="text-[10px] md:text-[11px] text-gray-400 font-medium">
-                  Hệ thống thiết kế, tạo nhãn, gõ giá & quét mã vạch bằng camera sau
-                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsScannerOpen(true)}
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow-blue-500/10 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <Camera className="w-4 h-4" />
-                Quét mã vạch
-              </button>
+              {/* Scanner button has been moved to search area */}
             </div>
           </div>
         </header>
@@ -384,62 +375,48 @@ export default function App() {
           )}
 
           {/* Sapo Integration Sync Panel */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden transition-all duration-300">
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs relative overflow-hidden transition-all duration-300">
             {/* Top decorative gradient bar */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
             
-            <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex items-start gap-3.5 text-left">
               {/* Sapo Brand Circle Icon */}
-              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 shadow-2xs border border-blue-100">
-                <Database className={`w-6 h-6 ${isSyncing ? 'animate-spin' : ''}`} />
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 border border-blue-100 mt-0.5">
+                <Database className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
               </div>
               
-              <div className="space-y-1 flex-1 text-left">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-bold text-gray-900 text-sm md:text-base tracking-tight">
-                    Đồng bộ kho sản phẩm Sapo
-                  </h3>
-                  <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100 rounded-full">
-                    Kênh Sapo POS
-                  </span>
+              <div className="space-y-2 flex-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
+                  <span className="text-gray-400">Lần cập nhật cuối:</span>
+                  <strong className="text-gray-700 font-semibold">{sapoLastUpdated}</strong>
+                  <span className="text-gray-300">|</span>
+                  <span className="text-gray-400">Danh mục Sapo:</span>
+                  <strong className="text-gray-700 font-semibold">{MASTER_PRODUCTS.length} sản phẩm</strong>
                 </div>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center gap-y-1 gap-x-4 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Lần cập nhật cuối:</span>
-                    <strong className="text-gray-700 font-semibold">{sapoLastUpdated}</strong>
-                  </div>
-                  <div className="hidden sm:block text-gray-300">|</div>
-                  <div className="flex items-center gap-1">
-                    <Layers className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Danh mục Sapo:</span>
-                    <strong className="text-gray-700 font-semibold">{MASTER_PRODUCTS.length} sản phẩm</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end shrink-0">
-              {syncSuccessMessage && (
-                <span className="text-xs font-semibold text-green-600 flex items-center gap-1 animate-fade-in">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  Đồng bộ thành công!
-                </span>
-              )}
-              
-              <button
-                onClick={handleSyncSapo}
-                disabled={isSyncing}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer ${
-                  isSyncing
-                    ? 'bg-blue-50 text-blue-400 border border-blue-100 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-blue-500/10 active:scale-98'
-                }`}
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Đang đồng bộ...' : 'Cập nhật sản phẩm Sapo'}
-              </button>
+                {/* Update button and success feedback aligned to the left */}
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    onClick={handleSyncSapo}
+                    disabled={isSyncing}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer ${
+                      isSyncing
+                        ? 'bg-blue-50 text-blue-400 border border-blue-100 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white active:scale-98'
+                    }`}
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    {isSyncing ? 'Đang cập nhật...' : 'Cập nhật sản phẩm Sapo'}
+                  </button>
+
+                  {syncSuccessMessage && (
+                    <span className="text-xs font-semibold text-green-600 flex items-center gap-1 animate-fade-in">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      Đồng bộ thành công!
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
