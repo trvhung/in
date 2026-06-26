@@ -1,36 +1,43 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useDeferredValue } from 'react';
 import { Product } from '../types';
 import { Search, X, CheckSquare, Square, Filter, ChevronDown } from 'lucide-react';
-import { MASTER_PRODUCTS } from '../data/masterProducts';
 
 interface MultiSelectModalProps {
   onClose: () => void;
   onAddSelectedProducts: (selected: Product[]) => void;
   alreadyStagedProductIds: string[];
+  masterProducts: Product[];
 }
 
 export function MultiSelectModal({
   onClose,
   onAddSelectedProducts,
   alreadyStagedProductIds,
+  masterProducts,
 }: MultiSelectModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
   const [selectedIds, setSelectedIds] = useState<string[]>(alreadyStagedProductIds);
   const [filterWithBarcodeOnly, setFilterWithBarcodeOnly] = useState(false);
 
+  // Defer search query for smooth typing with 3828 products
+  const deferredQuery = useDeferredValue(searchQuery);
+
   // Derive available categories
   const categories = useMemo(() => {
-    const list = new Set(MASTER_PRODUCTS.map((p) => p.category).filter(Boolean));
+    const list = new Set(masterProducts.map((p) => p.category).filter(Boolean));
     return ['Tất cả', ...Array.from(list)];
-  }, []);
+  }, [masterProducts]);
 
-  // Filter master products based on user query & filters
+  // Filter master products based on user query & filters — limited to 200 for perf
   const filteredProducts = useMemo(() => {
-    return MASTER_PRODUCTS.filter((p) => {
-      const nameMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase().trim());
-      const skuMatch = p.sku.toLowerCase().includes(searchQuery.toLowerCase().trim());
-      const barcodeMatch = p.barcode.toLowerCase().includes(searchQuery.toLowerCase().trim());
+    const MAX_RESULTS = 200;
+    const query = deferredQuery.toLowerCase().trim();
+
+    const results = masterProducts.filter((p) => {
+      const nameMatch = p.name.toLowerCase().includes(query);
+      const skuMatch = p.sku.toLowerCase().includes(query);
+      const barcodeMatch = p.barcode.toLowerCase().includes(query);
       const matchesSearch = nameMatch || skuMatch || barcodeMatch;
 
       const matchesCategory = selectedCategory === 'Tất cả' || p.category === selectedCategory;
@@ -38,7 +45,9 @@ export function MultiSelectModal({
 
       return matchesSearch && matchesCategory && matchesBarcode;
     });
-  }, [searchQuery, selectedCategory, filterWithBarcodeOnly]);
+
+    return results.slice(0, MAX_RESULTS);
+  }, [masterProducts, deferredQuery, selectedCategory, filterWithBarcodeOnly]);
 
   const handleToggleSelect = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -66,8 +75,8 @@ export function MultiSelectModal({
   };
 
   const handleConfirmAdd = () => {
-    // Map selectedIds back to the actual MASTER_PRODUCTS
-    const chosen = MASTER_PRODUCTS.filter((p) => selectedIds.includes(p.id));
+    // Map selectedIds back to the actual masterProducts
+    const chosen = masterProducts.filter((p) => selectedIds.includes(p.id));
     onAddSelectedProducts(chosen);
     onClose();
   };
@@ -189,14 +198,10 @@ export function MultiSelectModal({
                   {/* Thumbnail & Meta col */}
                   <div className="col-span-8 flex items-center gap-3">
                     <div className="w-10 h-10 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-400 font-bold overflow-hidden">
-                      {p.name.includes('nồi') || p.name.includes('Nồi') ? (
-                        <span className="text-xl">🍲</span>
-                      ) : p.name.includes('chảo') || p.name.includes('Chảo') ? (
-                        <span className="text-xl">🍳</span>
-                      ) : p.name.includes('Áo') ? (
-                        <span className="text-xl">👕</span>
+                      {p.image ? (
+                        <img src={p.image} alt="" className="w-full h-full object-cover" loading="lazy" />
                       ) : (
-                        <span className="text-xl">📦</span>
+                        <span className="text-lg">📦</span>
                       )}
                     </div>
                     <div className="min-w-0">

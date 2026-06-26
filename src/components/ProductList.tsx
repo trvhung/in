@@ -1,7 +1,6 @@
-import { useState, FormEvent, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
 import { Product } from '../types';
 import { Search, Plus, Trash2, Camera, HelpCircle, Layers, X, PlusCircle } from 'lucide-react';
-import { MASTER_PRODUCTS } from '../data/masterProducts';
 
 interface ProductListProps {
   products: Product[];
@@ -12,6 +11,7 @@ interface ProductListProps {
   onOpenMultiSelect: () => void;
   activeProductId: string | null;
   onSelectProduct: (id: string) => void;
+  masterProducts: Product[];
 }
 
 export function ProductList({
@@ -23,6 +23,7 @@ export function ProductList({
   onOpenMultiSelect,
   activeProductId,
   onSelectProduct,
+  masterProducts,
 }: ProductListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -39,23 +40,35 @@ export function ProductList({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter master catalog items based on user search query, if empty, show all. Already selected items are excluded.
-  const liveSearchResults = MASTER_PRODUCTS.filter((p) => {
-    // Hide if already in the selected products list
-    const isAlreadySelected = products.some((sel) => sel.sku === p.sku);
-    if (isAlreadySelected) return false;
+  // Defer search query to avoid blocking input during typing
+  const deferredQuery = useDeferredValue(searchQuery);
 
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return true;
-    return (
-      p.name.toLowerCase().includes(query) ||
-      p.sku.toLowerCase().includes(query) ||
-      (p.barcode && p.barcode.toLowerCase().includes(query))
-    );
-  });
+  // Filter master catalog items — optimized with useMemo + deferred query
+  const liveSearchResults = useMemo(() => {
+    const query = deferredQuery.toLowerCase().trim();
+    const MAX_RESULTS = 100;
+
+    const results = masterProducts.filter((p) => {
+      // Hide if already in the selected products list
+      const isAlreadySelected = products.some((sel) => sel.sku === p.sku);
+      if (isAlreadySelected) return false;
+
+      if (!query) return true;
+      return (
+        p.name.toLowerCase().includes(query) ||
+        p.sku.toLowerCase().includes(query) ||
+        (p.barcode && p.barcode.toLowerCase().includes(query))
+      );
+    });
+
+    return results.slice(0, MAX_RESULTS);
+  }, [masterProducts, products, deferredQuery]);
 
   // Sum of "SL tem"
-  const totalQty = products.reduce((sum, p) => sum + p.quantity, 0);
+  const totalQty = useMemo(
+    () => products.reduce((sum, p) => sum + p.quantity, 0),
+    [products]
+  );
 
   const handleSelectDropdownItem = (item: Product) => {
     onAddProduct(item);
@@ -110,14 +123,10 @@ export function ProductList({
                       <div className="flex items-center gap-3 min-w-0">
                         {/* Avatar */}
                         <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-400 font-bold overflow-hidden">
-                          {p.name.includes('nồi') || p.name.includes('Nồi') ? (
-                            <span className="text-xl">🍲</span>
-                          ) : p.name.includes('chảo') || p.name.includes('Chảo') ? (
-                            <span className="text-xl">🍳</span>
-                          ) : p.name.includes('Áo') ? (
-                            <span className="text-xl">👕</span>
+                          {p.image ? (
+                            <img src={p.image} alt="" className="w-full h-full object-cover" loading="lazy" />
                           ) : (
-                            <span className="text-xl">📦</span>
+                            <span className="text-lg">📦</span>
                           )}
                         </div>
 
@@ -220,14 +229,10 @@ export function ProductList({
                 {/* Product avatar, metadata, name */}
                 <div className="col-span-5 flex items-center gap-3 pr-2">
                   <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-400 font-bold overflow-hidden">
-                    {p.name.includes('nồi') || p.name.includes('Nồi') ? (
-                      <span className="text-xl">🍲</span>
-                    ) : p.name.includes('chảo') || p.name.includes('Chảo') ? (
-                      <span className="text-xl">🍳</span>
-                    ) : p.name.includes('Áo') ? (
-                      <span className="text-xl">👕</span>
+                    {p.image ? (
+                      <img src={p.image} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <span className="text-xl">📦</span>
+                      <span className="text-lg">📦</span>
                     )}
                   </div>
 

@@ -6,7 +6,7 @@ import { BarcodeScanner } from './components/BarcodeScanner';
 import { PrintLayout } from './components/PrintLayout';
 import { Barcode } from './components/Barcode';
 import { MultiSelectModal } from './components/MultiSelectModal';
-import { MASTER_PRODUCTS } from './data/masterProducts';
+import { useMasterProducts } from './hooks/useMasterProducts';
 import { 
   Printer, 
   Camera, 
@@ -19,49 +19,6 @@ import {
   Calendar,
   Layers
 } from 'lucide-react';
-
-const INITIAL_PRODUCTS: Product[] = [
-  {
-    id: 'm1',
-    name: 'Áo thun nam basic mùa hè - Size L / Màu trắng - PVN99',
-    sku: 'AOTHUNBASIC',
-    barcode: '9999000',
-    quantity: 1,
-    price: 9999000,
-    comparePrice: 12000000,
-    category: 'Thời trang',
-  },
-  {
-    id: 'm2',
-    name: 'Tay treo chảo',
-    sku: 'TAYTREOCHAO',
-    barcode: '',
-    quantity: 0,
-    price: 0,
-    comparePrice: 0,
-    category: 'Phụ kiện bếp',
-  },
-  {
-    id: 'm3',
-    name: 'Bộ nồi chảo chống dính Elmich size 20, chảo 24cm',
-    sku: '2352680FD',
-    barcode: '',
-    quantity: 0,
-    price: 0,
-    comparePrice: 0,
-    category: 'Dụng cụ nấu ăn',
-  },
-  {
-    id: 'm4',
-    name: 'Nồi gang tráng men sứ cao cấp Elmich Cast Enamel Cookware EL8271',
-    sku: '2358271',
-    barcode: '8595249182713',
-    quantity: 0,
-    price: 1499000,
-    comparePrice: 1890000,
-    category: 'Nồi chảo cao cấp',
-  },
-];
 
 const INITIAL_TEMPLATES: LabelTemplate[] = [
   {
@@ -123,7 +80,7 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
 ];
 
 export default function App() {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [activeProductId, setActiveProductId] = useState<string>('m1');
   const [templates, setTemplates] = useState<LabelTemplate[]>(INITIAL_TEMPLATES);
   const [activeTemplateId, setActiveTemplateId] = useState<string>('sale-yellow');
@@ -131,10 +88,16 @@ export default function App() {
   const [isPrintLayoutOpen, setIsPrintLayoutOpen] = useState(false);
   const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
   
+  // Master products from Sapo
+  const {
+    masterProducts,
+    isLoading: isMasterLoading,
+    lastUpdated: sapoLastUpdated,
+    syncError: sapoSyncError,
+    syncSapo,
+  } = useMasterProducts();
+
   // Sapo sync states
-  const [sapoLastUpdated, setSapoLastUpdated] = useState<string>(() => {
-    return localStorage.getItem('sapoLastUpdated') || '26/06/2026 08:00';
-  });
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccessMessage, setSyncSuccessMessage] = useState(false);
 
@@ -146,32 +109,23 @@ export default function App() {
     created?: boolean;
   } | null>(null);
 
-  const handleSyncSapo = () => {
+  const handleSyncSapo = async () => {
     setIsSyncing(true);
     setSyncSuccessMessage(false);
-    
-    // Simulate updating from Sapo
-    setTimeout(() => {
-      const now = new Date();
-      const formattedDate = now.toLocaleDateString('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      }) + ' ' + now.toLocaleTimeString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      
-      setSapoLastUpdated(formattedDate);
-      localStorage.setItem('sapoLastUpdated', formattedDate);
-      setIsSyncing(false);
+
+    try {
+      const result = await syncSapo();
       setSyncSuccessMessage(true);
-      
+
       // Auto-clear success message
       setTimeout(() => {
         setSyncSuccessMessage(false);
       }, 3000);
-    }, 1500);
+    } catch (err: any) {
+      console.error('Sapo sync failed:', err);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const activeProduct = products.find((p) => p.id === activeProductId) || null;
@@ -264,7 +218,7 @@ export default function App() {
       });
     } else {
       // Check if it's in the Master list
-      const masterMatch = INITIAL_PRODUCTS.find(
+      const masterMatch = masterProducts.find(
         (m) => m.barcode === barcode || m.sku.toLowerCase() === barcode.toLowerCase()
       );
 
@@ -391,7 +345,7 @@ export default function App() {
                   <strong className="text-gray-700 font-semibold">{sapoLastUpdated}</strong>
                   <span className="text-gray-300">|</span>
                   <span className="text-gray-400">Danh mục Sapo:</span>
-                  <strong className="text-gray-700 font-semibold">{MASTER_PRODUCTS.length} sản phẩm</strong>
+                  <strong className="text-gray-700 font-semibold">{masterProducts.length} sản phẩm</strong>
                 </div>
 
                 {/* Update button and success feedback aligned to the left */}
@@ -434,6 +388,7 @@ export default function App() {
                 onOpenMultiSelect={() => setIsMultiSelectOpen(true)}
                 activeProductId={activeProductId}
                 onSelectProduct={setActiveProductId}
+                masterProducts={masterProducts}
               />
             </div>
 
@@ -477,6 +432,7 @@ export default function App() {
           onClose={() => setIsMultiSelectOpen(false)}
           onAddSelectedProducts={handleConfirmMultiSelectProducts}
           alreadyStagedProductIds={products.map((p) => p.id)}
+          masterProducts={masterProducts}
         />
       )}
 
