@@ -446,7 +446,7 @@ export default function App() {
                 onChangeTemplate={setActiveTemplateId}
                 templates={templates}
                 onUpdateTemplateOptions={handleUpdateTemplateOptions}
-                onPrint={() => setIsPrintLayoutOpen(true)}
+                onPrint={() => window.print()}
               />
             </div>
 

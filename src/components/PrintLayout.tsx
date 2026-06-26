@@ -79,7 +79,14 @@ export function PrintLayout({ products, template, onClose }: PrintLayoutProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/95 text-white overflow-y-auto p-4 md:p-8 no-print">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      className="fixed inset-0 z-50 flex flex-col bg-slate-900/95 text-white overflow-y-auto p-4 md:p-8 no-print"
+    >
       
       {/* Print Control Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-5xl w-full mx-auto bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl mb-6">
@@ -123,7 +130,14 @@ export function PrintLayout({ products, template, onClose }: PrintLayoutProps) {
       </div>
 
       {/* Layout Grid Preview */}
-      <div className="flex-1 flex flex-col items-center justify-center py-6">
+      <div 
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+        className="flex-1 flex flex-col items-center justify-center py-6"
+      >
         <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">
           Hình ảnh tem thực tế sẽ in ra giấy
         </div>
