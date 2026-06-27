@@ -36,11 +36,11 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
     width: '35mm',
     height: '22mm',
     columns: 1,
-    description: 'Tem giá niêm yết khổ 35x22mm - Tên, Giá, Barcode lớn, Giá niêm yết',
+    description: 'Tem giá niêm yết khổ 35x22mm - Tên, SKU, Barcode lớn, Giá niêm yết',
     showName: true,
-    showPrice: true,
+    showPrice: false,
     showComparePrice: true,
-    showSku: false,
+    showSku: true,
     showBarcodeText: true,
     showBarcode: true,
   },
@@ -393,26 +393,25 @@ export default function App() {
               return (
                 <div
                   key={index}
-                  className="bg-white border border-gray-300 flex flex-col items-center justify-between text-center relative overflow-hidden select-none p-1"
+                  className="bg-white border border-gray-300 flex flex-col items-center text-center relative overflow-hidden select-none p-1"
                   style={{
                     width: sizeWidth,
                     height: sizeHeight,
                     pageBreakInside: 'avoid',
                   }}
                 >
-                  {/* Name + Price row */}
-                  <div className="flex justify-between items-center w-full gap-1">
-                    {activeTemplate.showName && (
-                      <div className="text-[8px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
-                        {p.name}
-                      </div>
-                    )}
-                    {activeTemplate.showPrice && (
-                      <span className="text-[9px] font-extrabold text-gray-900 shrink-0">
-                        {p.price === 0 ? '0đ' : p.price.toLocaleString('vi-VN') + 'đ'}
-                      </span>
-                    )}
-                  </div>
+                  {/* Name */}
+                  {activeTemplate.showName && (
+                    <div className="text-[8px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase w-full text-left">
+                      {p.name}
+                    </div>
+                  )}
+                  {/* SKU */}
+                  {activeTemplate.showSku && (
+                    <div className="text-[6px] font-medium text-gray-500 w-full text-left">
+                      {p.sku}
+                    </div>
+                  )}
 
                   {/* Big Barcode - center */}
                   {activeTemplate.showBarcode !== false && (
@@ -426,10 +425,10 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Giá niêm yết - bottom */}
+                  {/* Giá niêm yết - bottom, centered, big, bold */}
                   {activeTemplate.showComparePrice && p.comparePrice && p.comparePrice > 0 && (
-                    <div className="text-[7px] font-bold text-gray-600 w-full text-right">
-                      Giá NY: {p.comparePrice.toLocaleString('vi-VN')}đ
+                    <div className="text-[9px] font-extrabold text-gray-900 w-full text-center">
+                      {p.comparePrice.toLocaleString('vi-VN')}đ
                     </div>
                   )}
                 </div>

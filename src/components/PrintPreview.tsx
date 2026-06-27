@@ -249,25 +249,24 @@ export function PrintPreview({
             ) : activeTemplate.id === 'list-price' ? (
               /* Tem Giá Niêm Yết Preview - same width as sale */
               <div
-                className="bg-white border border-gray-300 flex flex-col items-center justify-between text-center relative select-none p-1"
+                className="bg-white border border-gray-300 flex flex-col items-center text-center relative select-none p-1"
                 style={{
                   width: '70mm',
                   height: '44mm',
                 }}
               >
-                {/* Name + Price row */}
-                <div className="flex justify-between items-center w-full gap-2">
-                  {activeTemplate.showName && (
-                    <div className="text-[16px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
-                      {activeProduct.name}
-                    </div>
-                  )}
-                  {activeTemplate.showPrice && (
-                    <span className="text-[18px] font-extrabold text-gray-900 shrink-0">
-                      {activeProduct.price === 0 ? '0đ' : activeProduct.price.toLocaleString('vi-VN') + 'đ'}
-                    </span>
-                  )}
-                </div>
+                {/* Name */}
+                {activeTemplate.showName && (
+                  <div className="text-[16px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase w-full text-left">
+                    {activeProduct.name}
+                  </div>
+                )}
+                {/* SKU */}
+                {activeTemplate.showSku && (
+                  <div className="text-[12px] font-medium text-gray-500 w-full text-left">
+                    {activeProduct.sku}
+                  </div>
+                )}
 
                 {/* Big Barcode - center */}
                 {activeTemplate.showBarcode !== false && (
@@ -281,10 +280,10 @@ export function PrintPreview({
                   </div>
                 )}
 
-                {/* Giá niêm yết - bottom */}
+                {/* Giá niêm yết - bottom, centered, big, bold */}
                 {activeTemplate.showComparePrice && activeProduct.comparePrice && activeProduct.comparePrice > 0 && (
-                  <div className="text-[14px] font-bold text-gray-600 w-full text-right">
-                    Giá NY: {activeProduct.comparePrice.toLocaleString('vi-VN')}đ
+                  <div className="text-[18px] font-extrabold text-gray-900 w-full text-center">
+                    {activeProduct.comparePrice.toLocaleString('vi-VN')}đ
                   </div>
                 )}
 
