@@ -511,16 +511,19 @@ export default function App() {
                           {p.comparePrice!.toLocaleString('vi-VN')}
                         </span>
                       )}
+                      {/* Placeholder giữ cân bằng nếu thiếu 1 bên */}
+                      {!activeTemplate.showSku && <div />}
+                      {!hasStrikeThrough && activeTemplate.showComparePrice && <div />}
                     </div>
 
-                    {/* Big Price - bottom */}
-                    <div className="flex items-baseline">
+                    {/* Big Price - bottom, centered */}
+                    <div className="flex justify-center">
                       {activeTemplate.showPrice && (
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-[53px] font-bold text-[#E30613] leading-none tracking-tight">
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="text-[53px] font-semibold text-[#E30613] leading-none tracking-tighter">
                             {displayPrice.toLocaleString('vi-VN')}
                           </span>
-                          <span className="text-[13px] font-semibold text-[#E30613] tracking-wider">VND</span>
+                          <span className="text-[13px] font-medium text-[#E30613] tracking-wider">VND</span>
                         </div>
                       )}
                     </div>
