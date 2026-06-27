@@ -487,39 +487,38 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Product Name */}
-                  <div className="flex-1 flex flex-col justify-between pt-2 pr-2 pb-1.5 pl-[60px]">
-                    <div>
-                      {activeTemplate.showName && (
-                        <div className="text-[11px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight">
-                          {p.name}
-                        </div>
-                      )}
-
-                      {/* SKU + Compare Price row */}
-                      <div className="flex justify-between items-end mt-1">
-                        {activeTemplate.showSku && (
-                          <div className="text-[10px] font-medium text-slate-700 tracking-wide font-sans">
-                            {p.sku}
-                          </div>
-                        )}
-                        {activeTemplate.showComparePrice && hasStrikeThrough && (
-                          <span className="text-[11px] text-slate-600 line-through font-medium tracking-tight">
-                            {p.comparePrice!.toLocaleString('vi-VN')}
-                          </span>
-                        )}
+                  {/* Content */}
+                  <div className="flex-1 flex flex-col pt-1.5 pr-2 pb-1 pl-[60px]">
+                    {/* Product Name - top */}
+                    {activeTemplate.showName && (
+                      <div className="text-[10px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight">
+                        {p.name}
                       </div>
-                    </div>
+                    )}
 
-                    {/* Big Price */}
-                    <div className="flex items-baseline">
+                    {/* Big Price - middle, takes remaining space */}
+                    <div className="flex-1 flex items-center">
                       {activeTemplate.showPrice && (
                         <div className="flex items-baseline gap-1">
-                          <span className="text-[38px] font-bold text-[#E30613] leading-none tracking-tight">
+                          <span className="text-[44px] font-bold text-[#E30613] leading-none tracking-tight">
                             {displayPrice.toLocaleString('vi-VN')}
                           </span>
                           <span className="text-[11px] font-semibold text-[#E30613] tracking-wider">VND</span>
                         </div>
+                      )}
+                    </div>
+
+                    {/* SKU + Compare Price - bottom */}
+                    <div className="flex justify-between items-end">
+                      {activeTemplate.showSku && (
+                        <div className="text-[9px] font-medium text-slate-700 tracking-wide font-sans">
+                          {p.sku}
+                        </div>
+                      )}
+                      {activeTemplate.showComparePrice && hasStrikeThrough && (
+                        <span className="text-[10px] text-slate-600 line-through font-medium tracking-tight">
+                          {p.comparePrice!.toLocaleString('vi-VN')}
+                        </span>
                       )}
                     </div>
                   </div>
