@@ -180,10 +180,10 @@ export function PrintPreview({
         {/* Single Label Realistic Preview Stage */}
         <div className={`rounded-xl flex flex-col items-center justify-center transition-all overflow-hidden ${
           (activeTemplate.id.startsWith('sale-') || activeTemplate.id === 'list-price')
-            ? 'bg-transparent p-2'
+            ? activeTemplate.id === 'list-price' ? 'bg-transparent p-2 overflow-visible' : 'bg-transparent p-2'
             : 'bg-gray-100 border border-gray-200 p-5'
         }`}
-        style={(activeTemplate.id.startsWith('sale-') || activeTemplate.id === 'list-price') ? {} : { minHeight: '220px' }}
+        style={(activeTemplate.id.startsWith('sale-') || activeTemplate.id === 'list-price') ? { minHeight: activeTemplate.id === 'list-price' ? '180px' : undefined } : { minHeight: '220px' }}
         >
           {activeProduct ? (
             activeTemplate.id.startsWith('sale-') ? (
@@ -251,12 +251,14 @@ export function PrintPreview({
                 </div>
               </div>
             ) : activeTemplate.id === 'list-price' ? (
-              /* Tem Giá Niêm Yết Preview */
+              /* Tem Giá Niêm Yết Preview - scaled 3x */
               <div
                 className="bg-white border border-gray-300 flex flex-col items-center justify-between text-center relative select-none p-1"
                 style={{
                   width: activeTemplate.width,
                   height: activeTemplate.height,
+                  transform: 'scale(3)',
+                  transformOrigin: 'top center',
                 }}
               >
                 {/* Name + Price row */}
