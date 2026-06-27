@@ -192,7 +192,7 @@ export function PrintPreview({
                 </div>
 
                 {/* Nội dung chính */}
-                <div className="flex-1 flex flex-col pt-1.5 pr-3 pb-1.5 pl-[70px]">
+                <div className="flex-1 flex flex-col pt-1.5 pr-3 pb-1 pl-[70px]">
                   {/* Product Name - top */}
                   {activeTemplate.showName && (
                     <div className="text-[11px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight">
@@ -200,28 +200,31 @@ export function PrintPreview({
                     </div>
                   )}
 
-                  {/* SKU + Compare Price - above price */}
-                  <div className="flex justify-between items-end mt-0.5">
+                  {/* Spacer pushes SKU/price to middle-bottom */}
+                  <div className="flex-1" />
+
+                  {/* SKU + Compare Price - sát trên giá */}
+                  <div className="flex justify-between items-end">
                     {activeTemplate.showSku && (
-                      <div className="text-[10px] font-medium text-slate-700 tracking-wide font-sans">
+                      <div className="text-[15px] font-medium text-slate-700 tracking-wide font-sans">
                         {activeProduct.sku}
                       </div>
                     )}
                     {activeTemplate.showComparePrice && activeProduct.price > 0 && activeProduct.comparePrice && activeProduct.comparePrice > activeProduct.price && (
-                      <span className="text-[11px] text-slate-600 line-through font-medium tracking-tight">
+                      <span className="text-[17px] text-slate-600 line-through font-medium tracking-tight">
                         {activeProduct.comparePrice.toLocaleString('vi-VN')}
                       </span>
                     )}
                   </div>
 
-                  {/* Big Price - bottom, takes remaining space */}
-                  <div className="flex-1 flex items-end">
+                  {/* Big Price - bottom */}
+                  <div className="flex items-baseline">
                     {activeTemplate.showPrice && (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-[48px] font-bold text-[#E30613] leading-none tracking-tight">
+                        <span className="text-[58px] font-bold text-[#E30613] leading-none tracking-tight">
                           {(activeProduct.price > 0 ? activeProduct.price : (activeProduct.comparePrice || 0)).toLocaleString('vi-VN')}
                         </span>
-                        <span className="text-[13px] font-semibold text-[#E30613] tracking-wider">VND</span>
+                        <span className="text-[15px] font-semibold text-[#E30613] tracking-wider">VND</span>
                       </div>
                     )}
                   </div>
