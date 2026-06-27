@@ -161,6 +161,19 @@ export function PrintPreview({
                 <ToggleLeft className="w-5 h-5 text-gray-400" />
               )}
             </button>
+
+            {/* Color picker for sale templates */}
+            {activeTemplate.id.startsWith('sale-') && (
+              <div className="flex items-center justify-between py-0.5">
+                <span className="text-xs text-gray-600">Màu nền</span>
+                <input
+                  type="color"
+                  value={activeTemplate.bgColor || '#FFFFFF'}
+                  onChange={(e) => onUpdateTemplateOptions({ bgColor: e.target.value })}
+                  className="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0"
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -180,9 +193,7 @@ export function PrintPreview({
                 style={{
                   width: activeTemplate.width,
                   height: activeTemplate.height,
-                  backgroundColor:
-                    activeTemplate.id === 'sale-white' ? '#FFFFFF' :
-                    activeTemplate.id === 'sale-blue' ? '#E8F4FD' : '#FFEE00',
+                  backgroundColor: activeTemplate.bgColor || '#FFFFFF',
                 }}
               >
                 {/* SALE box sát góc trên-trái */}

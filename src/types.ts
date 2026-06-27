@@ -23,4 +23,5 @@ export interface LabelTemplate {
   showSku: boolean;
   showBarcodeText: boolean;
   showBarcode?: boolean;
+  bgColor?: string; // màu nền cho sale template
 }

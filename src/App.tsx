@@ -16,46 +16,19 @@ import {
 
 const INITIAL_TEMPLATES: LabelTemplate[] = [
   {
-    id: 'sale-yellow',
-    name: 'Tem Sale Vàng (Mica 70x40mm)',
+    id: 'sale-70x40',
+    name: 'Tem Sale (Mica 70x40mm)',
     width: '70mm',
     height: '40mm',
     columns: 1,
-    description: 'Khổ cài mica kệ hàng 70x40mm màu vàng có viền đỏ',
+    description: 'Khổ cài mica kệ hàng 70x40mm',
     showName: true,
     showPrice: true,
     showComparePrice: true,
     showSku: true,
     showBarcodeText: false,
     showBarcode: false,
-  },
-  {
-    id: 'sale-white',
-    name: 'Tem Sale Trắng (Mica 70x40mm)',
-    width: '70mm',
-    height: '40mm',
-    columns: 1,
-    description: 'Khổ cài mica kệ hàng 70x40mm nền trắng',
-    showName: true,
-    showPrice: true,
-    showComparePrice: true,
-    showSku: true,
-    showBarcodeText: false,
-    showBarcode: false,
-  },
-  {
-    id: 'sale-blue',
-    name: 'Tem Sale Xanh (Mica 70x40mm)',
-    width: '70mm',
-    height: '40mm',
-    columns: 1,
-    description: 'Khổ cài mica kệ hàng 70x40mm nền xanh',
-    showName: true,
-    showPrice: true,
-    showComparePrice: true,
-    showSku: true,
-    showBarcodeText: false,
-    showBarcode: false,
+    bgColor: '#FFFFFF',
   },
   {
     id: 'long-bien',
@@ -105,7 +78,7 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeProductId, setActiveProductId] = useState<string>('m1');
   const [templates, setTemplates] = useState<LabelTemplate[]>(INITIAL_TEMPLATES);
-  const [activeTemplateId, setActiveTemplateId] = useState<string>('sale-yellow');
+  const [activeTemplateId, setActiveTemplateId] = useState<string>('sale-70x40');
   const [isPrintLayoutOpen, setIsPrintLayoutOpen] = useState(false);
   const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
 
@@ -385,9 +358,6 @@ export default function App() {
               : '50mm';
 
             if (activeTemplate.id.startsWith('sale-')) {
-              const isSaleWhite = activeTemplate.id === 'sale-white';
-              const isSaleBlue = activeTemplate.id === 'sale-blue';
-              const bgColor = isSaleWhite ? '#FFFFFF' : isSaleBlue ? '#E8F4FD' : '#FFEE00';
               // Auto-calculate discount: nếu có price và comparePrice > price
               const discountPercent = p.price > 0 && p.comparePrice && p.comparePrice > p.price
                 ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
@@ -404,7 +374,7 @@ export default function App() {
                     width: sizeWidth,
                     height: sizeHeight,
                     pageBreakInside: 'avoid',
-                    backgroundColor: bgColor,
+                    backgroundColor: activeTemplate.bgColor || '#FFFFFF',
                   }}
                 >
                   {/* SALE box sát góc trên-trái */}
