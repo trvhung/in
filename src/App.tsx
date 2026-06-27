@@ -23,11 +23,11 @@ import {
 const INITIAL_TEMPLATES: LabelTemplate[] = [
   {
     id: 'sale-yellow',
-    name: 'Tem Sale Vàng (Mica 75x45mm)',
-    width: '75mm',
-    height: '45mm',
+    name: 'Tem Sale Vàng (Mica 70x40mm)',
+    width: '70mm',
+    height: '40mm',
     columns: 1,
-    description: 'Khổ cài mica kệ hàng 75x45mm màu vàng có viền đỏ',
+    description: 'Khổ cài mica kệ hàng 70x40mm màu vàng có viền đỏ',
     showName: true,
     showPrice: true,
     showComparePrice: true,
@@ -437,24 +437,23 @@ export default function App() {
       )}
 
       {/* 5. TRUE PHYSICAL PRINT SHEET (Visible ONLY when system is printing Ctrl+P) */}
-      <div className="hidden print-only bg-white text-black p-4 w-full">
+      <div className="hidden print-only bg-white text-black p-0 w-full">
         <div
-          className={`grid gap-4 justify-center bg-white`}
+          className="flex flex-wrap gap-1 bg-white"
           style={{
-            gridTemplateColumns: `repeat(${activeTemplate.columns}, minmax(0, 1fr))`,
-            maxWidth: activeTemplate.id === 'sale-yellow' ? '75mm' : activeTemplate.columns === 1 ? '50mm' : activeTemplate.columns === 2 ? '100mm' : '150mm',
+            justifyContent: 'flex-start',
           }}
         >
           {printableLabels.map((p, index) => {
             const sizeWidth = activeTemplate.id === 'sale-yellow'
-              ? '75mm'
+              ? '70mm'
               : activeTemplate.id === 'single-small'
               ? '50mm'
               : activeTemplate.id === 'supermarket'
               ? '35mm'
               : '37.5mm';
             const sizeHeight = activeTemplate.id === 'sale-yellow'
-              ? '45mm'
+              ? '40mm'
               : activeTemplate.id === 'single-small'
               ? '30mm'
               : activeTemplate.id === 'supermarket'
@@ -516,10 +515,10 @@ export default function App() {
                     <div className="flex items-baseline">
                       {activeTemplate.showPrice && (
                         <div className="flex items-baseline gap-1">
-                          <span className="text-[34px] font-black text-[#E30613] leading-none tracking-tight">
+                          <span className="text-[38px] font-bold text-[#E30613] leading-none tracking-tight">
                             {displayPrice.toLocaleString('vi-VN')}
                           </span>
-                          <span className="text-[12px] font-bold text-[#E30613] tracking-wider">VND</span>
+                          <span className="text-[11px] font-semibold text-[#E30613] tracking-wider">VND</span>
                         </div>
                       )}
                     </div>

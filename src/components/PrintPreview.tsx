@@ -217,10 +217,10 @@ export function PrintPreview({
                   <div className="flex items-baseline">
                     {activeTemplate.showPrice && (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-[38px] font-black text-[#E30613] leading-none tracking-tight">
+                        <span className="text-[42px] font-bold text-[#E30613] leading-none tracking-tight">
                           {(activeProduct.price > 0 ? activeProduct.price : (activeProduct.comparePrice || 0)).toLocaleString('vi-VN')}
                         </span>
-                        <span className="text-[13px] font-bold text-[#E30613] tracking-wider">VND</span>
+                        <span className="text-[13px] font-semibold text-[#E30613] tracking-wider">VND</span>
                       </div>
                     )}
                   </div>
