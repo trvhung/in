@@ -255,15 +255,15 @@ export function PrintPreview({
                   height: '44mm',
                 }}
               >
-                {/* Name */}
+                {/* Name - max 2 lines */}
                 {activeTemplate.showName && (
-                  <div className="text-[16px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase w-full text-left">
+                  <div className="text-[16px] font-bold text-gray-900 leading-tight line-clamp-2 uppercase w-full text-center">
                     {activeProduct.name}
                   </div>
                 )}
-                {/* SKU */}
+                {/* SKU - centered */}
                 {activeTemplate.showSku && (
-                  <div className="text-[12px] font-medium text-gray-500 w-full text-left">
+                  <div className="text-[12px] font-medium text-gray-500 w-full text-center">
                     {activeProduct.sku}
                   </div>
                 )}
@@ -280,9 +280,9 @@ export function PrintPreview({
                   </div>
                 )}
 
-                {/* Giá niêm yết - bottom, centered, big, bold */}
+                {/* Giá niêm yết - bottom, centered, big, bold +50% */}
                 {activeTemplate.showComparePrice && activeProduct.comparePrice && activeProduct.comparePrice > 0 && (
-                  <div className="text-[18px] font-extrabold text-gray-900 w-full text-center">
+                  <div className="text-[27px] font-extrabold text-gray-900 w-full text-center leading-none">
                     {activeProduct.comparePrice.toLocaleString('vi-VN')}đ
                   </div>
                 )}

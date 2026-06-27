@@ -41,7 +41,7 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
     showPrice: false,
     showComparePrice: true,
     showSku: true,
-    showBarcodeText: true,
+    showBarcodeText: false,
     showBarcode: true,
   },
 ];
@@ -400,15 +400,15 @@ export default function App() {
                     pageBreakInside: 'avoid',
                   }}
                 >
-                  {/* Name */}
+                  {/* Name - max 2 lines */}
                   {activeTemplate.showName && (
-                    <div className="text-[8px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase w-full text-left">
+                    <div className="text-[8px] font-bold text-gray-900 leading-tight line-clamp-2 uppercase w-full text-center">
                       {p.name}
                     </div>
                   )}
-                  {/* SKU */}
+                  {/* SKU - centered */}
                   {activeTemplate.showSku && (
-                    <div className="text-[6px] font-medium text-gray-500 w-full text-left">
+                    <div className="text-[6px] font-medium text-gray-500 w-full text-center">
                       {p.sku}
                     </div>
                   )}
@@ -427,7 +427,7 @@ export default function App() {
 
                   {/* Giá niêm yết - bottom, centered, big, bold */}
                   {activeTemplate.showComparePrice && p.comparePrice && p.comparePrice > 0 && (
-                    <div className="text-[9px] font-extrabold text-gray-900 w-full text-center">
+                    <div className="text-[14px] font-extrabold text-gray-900 w-full text-center leading-none">
                       {p.comparePrice.toLocaleString('vi-VN')}đ
                     </div>
                   )}
