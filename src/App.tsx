@@ -517,14 +517,14 @@ export default function App() {
                     </div>
 
                     {/* Big Price - bottom, centered */}
-                    <div className="flex justify-center">
+                    <div className="flex justify-center items-baseline">
                       {activeTemplate.showPrice && (
-                        <div className="flex items-baseline gap-0.5">
+                        <>
                           <span className="text-[53px] font-semibold text-[#E30613] leading-none tracking-tighter">
                             {displayPrice.toLocaleString('vi-VN')}
                           </span>
-                          <span className="text-[13px] font-medium text-[#E30613] tracking-wider">VND</span>
-                        </div>
+                          <span className="text-[10px] font-semibold text-[#E30613] ml-0.5">VND</span>
+                        </>
                       )}
                     </div>
                   </div>
