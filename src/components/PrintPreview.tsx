@@ -179,11 +179,11 @@ export function PrintPreview({
 
         {/* Single Label Realistic Preview Stage */}
         <div className={`rounded-xl flex flex-col items-center justify-center transition-all overflow-hidden ${
-          activeTemplate.id.startsWith('sale-')
+          (activeTemplate.id.startsWith('sale-') || activeTemplate.id === 'list-price')
             ? 'bg-transparent p-2'
             : 'bg-gray-100 border border-gray-200 p-5'
         }`}
-        style={activeTemplate.id.startsWith('sale-') ? {} : { minHeight: '220px' }}
+        style={(activeTemplate.id.startsWith('sale-') || activeTemplate.id === 'list-price') ? {} : { minHeight: '220px' }}
         >
           {activeProduct ? (
             activeTemplate.id.startsWith('sale-') ? (
@@ -250,13 +250,60 @@ export function PrintPreview({
                   Đang xem
                 </div>
               </div>
+            ) : activeTemplate.id === 'list-price' ? (
+              /* Tem Giá Niêm Yết Preview */
+              <div
+                className="bg-white border border-gray-300 flex flex-col items-center justify-between text-center relative select-none p-1"
+                style={{
+                  width: activeTemplate.width,
+                  height: activeTemplate.height,
+                }}
+              >
+                {/* Name + Price row */}
+                <div className="flex justify-between items-center w-full gap-1">
+                  {activeTemplate.showName && (
+                    <div className="text-[6px] font-semibold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
+                      {activeProduct.name}
+                    </div>
+                  )}
+                  {activeTemplate.showPrice && (
+                    <span className="text-[7px] font-bold text-gray-900 shrink-0">
+                      {activeProduct.price === 0 ? '0đ' : activeProduct.price.toLocaleString('vi-VN') + 'đ'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Big Barcode - center */}
+                {activeTemplate.showBarcode !== false && (
+                  <div className="flex-1 flex items-center justify-center w-full">
+                    <Barcode
+                      value={activeProduct.barcode || activeProduct.sku}
+                      displayValue={activeTemplate.showBarcodeText}
+                      height={22}
+                      fontSize={5}
+                    />
+                  </div>
+                )}
+
+                {/* Giá niêm yết - bottom */}
+                {activeTemplate.showComparePrice && activeProduct.comparePrice && activeProduct.comparePrice > 0 && (
+                  <div className="text-[6px] text-gray-500 w-full text-right">
+                    Giá NY: {activeProduct.comparePrice.toLocaleString('vi-VN')}đ
+                  </div>
+                )}
+
+                {/* Target Indicator badge */}
+                <div className="absolute top-0.5 right-0.5 px-1 bg-blue-600 text-[6px] text-white rounded uppercase font-bold pointer-events-none">
+                  Đang xem
+                </div>
+              </div>
             ) : (
               /* Standard Preview label */
               <div
                 className="bg-white border border-gray-300 rounded shadow-md p-4 flex flex-col justify-between text-black transition-all overflow-hidden relative"
                 style={{
-                  width: activeTemplate.id === 'single-small' ? '200px' : '260px',
-                  minHeight: activeTemplate.id === 'single-small' ? '120px' : '160px',
+                  width: '260px',
+                  minHeight: '160px',
                 }}
               >
                 {/* Product Name Header */}

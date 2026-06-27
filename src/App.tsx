@@ -31,45 +31,17 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
     bgColor: '#FFFFFF',
   },
   {
-    id: 'long-bien',
-    name: 'Long biên',
-    width: '75mm',
-    height: '50mm',
-    columns: 2,
-    description: 'Cuộn khổ 2 tem/ hàng - Rộng 75mm',
+    id: 'list-price',
+    name: 'Tem Giá Niêm Yết (35x22mm)',
+    width: '35mm',
+    height: '22mm',
+    columns: 1,
+    description: 'Tem giá niêm yết khổ 35x22mm - Tên, Giá, Barcode lớn, Giá niêm yết',
     showName: true,
     showPrice: true,
     showComparePrice: true,
-    showSku: true,
-    showBarcodeText: true,
-    showBarcode: true,
-  },
-  {
-    id: 'single-small',
-    name: 'Hà Nội (Khổ 1 tem)',
-    width: '50mm',
-    height: '30mm',
-    columns: 1,
-    description: 'Cuộn khổ 1 tem/ hàng - Rộng 50mm',
-    showName: true,
-    showPrice: true,
-    showComparePrice: false,
-    showSku: true,
-    showBarcodeText: true,
-    showBarcode: true,
-  },
-  {
-    id: 'supermarket',
-    name: 'Tem Siêu Thị (Khổ 3 tem)',
-    width: '105mm',
-    height: '22mm',
-    columns: 3,
-    description: 'Cuộn khổ 3 tem/ hàng - Rộng 105mm',
-    showName: true,
-    showPrice: true,
-    showComparePrice: false,
     showSku: false,
-    showBarcodeText: false,
+    showBarcodeText: true,
     showBarcode: true,
   },
 ];
@@ -342,20 +314,8 @@ export default function App() {
           }}
         >
           {printableLabels.map((p, index) => {
-            const sizeWidth = activeTemplate.id.startsWith('sale-')
-              ? activeTemplate.width
-              : activeTemplate.id === 'single-small'
-              ? '50mm'
-              : activeTemplate.id === 'supermarket'
-              ? '35mm'
-              : '37.5mm';
-            const sizeHeight = activeTemplate.id.startsWith('sale-')
-              ? activeTemplate.height
-              : activeTemplate.id === 'single-small'
-              ? '30mm'
-              : activeTemplate.id === 'supermarket'
-              ? '22mm'
-              : '50mm';
+            const sizeWidth = activeTemplate.width;
+            const sizeHeight = activeTemplate.height;
 
             if (activeTemplate.id.startsWith('sale-')) {
               // Auto-calculate discount: nếu có price và comparePrice > price
@@ -429,6 +389,53 @@ export default function App() {
               );
             }
 
+            if (activeTemplate.id === 'list-price') {
+              return (
+                <div
+                  key={index}
+                  className="bg-white border border-gray-300 flex flex-col items-center justify-between text-center relative overflow-hidden select-none p-1"
+                  style={{
+                    width: sizeWidth,
+                    height: sizeHeight,
+                    pageBreakInside: 'avoid',
+                  }}
+                >
+                  {/* Name + Price row */}
+                  <div className="flex justify-between items-center w-full gap-1">
+                    {activeTemplate.showName && (
+                      <div className="text-[6px] font-semibold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
+                        {p.name}
+                      </div>
+                    )}
+                    {activeTemplate.showPrice && (
+                      <span className="text-[7px] font-bold text-gray-900 shrink-0">
+                        {p.price === 0 ? '0đ' : p.price.toLocaleString('vi-VN') + 'đ'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Big Barcode - center */}
+                  {activeTemplate.showBarcode !== false && (
+                    <div className="flex-1 flex items-center justify-center w-full">
+                      <Barcode
+                        value={p.barcode || p.sku}
+                        displayValue={activeTemplate.showBarcodeText}
+                        height={22}
+                        fontSize={5}
+                      />
+                    </div>
+                  )}
+
+                  {/* Giá niêm yết - bottom */}
+                  {activeTemplate.showComparePrice && p.comparePrice && p.comparePrice > 0 && (
+                    <div className="text-[6px] text-gray-500 w-full text-right">
+                      Giá NY: {p.comparePrice.toLocaleString('vi-VN')}đ
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <div
                 key={index}
@@ -459,7 +466,7 @@ export default function App() {
                     <Barcode
                       value={p.barcode || p.sku}
                       displayValue={activeTemplate.showBarcodeText}
-                      height={activeTemplate.id === 'supermarket' ? 22 : 32}
+                      height={32}
                       fontSize={8}
                     />
                   </div>
