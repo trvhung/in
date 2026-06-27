@@ -1,6 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
+import { put, list, del } from '@vercel/blob';
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -44,11 +45,64 @@ const SAPO_BASE = process.env.SAPO_API_BASE_URL || '';
 const SAPO_USER = process.env.SAPO_USERNAME || '';
 const SAPO_PASS = process.env.SAPO_PASSWORD || '';
 const AUTH_HEADER = 'Basic ' + Buffer.from(`${SAPO_USER}:${SAPO_PASS}`).toString('base64');
-const DATA_DIR = process.env.VERCEL ? '/tmp' : path.join(process.cwd(), 'data');
+const DATA_DIR = process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN
+  ? '/tmp'
+  : path.join(process.cwd(), 'data');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'sapo-products.json');
 const META_FILE = path.join(DATA_DIR, 'sapo-meta.json');
 const LIMIT = 250;
 const BATCH_SIZE = 4;
+const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+
+// ── Storage abstraction (Blob on Vercel, fs locally) ───────────────
+
+async function readJsonBlob(filename: string): Promise<any | null> {
+  try {
+    const { blobs } = await list({ prefix: filename });
+    const latest = blobs
+      .filter(b => b.pathname === filename)
+      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0];
+    if (!latest) return null;
+    const res = await fetch(latest.url);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function writeJsonBlob(filename: string, data: any): Promise<void> {
+  // Clean up old blobs with the same pathname (put creates a new one each time)
+  try {
+    const { blobs } = await list({ prefix: filename });
+    for (const b of blobs) {
+      if (b.pathname === filename) {
+        await del(b.url);
+      }
+    }
+  } catch { /* best-effort cleanup */ }
+  await put(filename, JSON.stringify(data), { access: 'public' });
+}
+
+async function readJson(filename: string): Promise<any | null> {
+  if (useBlob) return readJsonBlob(filename);
+  try {
+    const raw = await fs.readFile(
+      filename === 'sapo-products.json' ? PRODUCTS_FILE : META_FILE,
+      'utf-8'
+    );
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+async function writeJson(filename: string, data: any): Promise<void> {
+  if (useBlob) return writeJsonBlob(filename, data);
+  await fs.mkdir(DATA_DIR, { recursive: true }).catch(() => {});
+  const filePath = filename === 'sapo-products.json' ? PRODUCTS_FILE : META_FILE;
+  await fs.writeFile(filePath, JSON.stringify(data), 'utf-8');
+}
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -103,25 +157,23 @@ app.use((_req, res, next) => {
 app.get('/api/sapo/products', async (_req, res) => {
   // Return from memory cache first (instant)
   if (cachedProducts) return res.json(cachedProducts);
-  // Fall back to /tmp file (same warm instance)
-  try {
-    const raw = await fs.readFile(PRODUCTS_FILE, 'utf-8');
-    cachedProducts = JSON.parse(raw);
-    res.json(cachedProducts);
-  } catch {
-    res.json([]);
+  // Fall back to persistent storage (blob or file)
+  const data = await readJson('sapo-products.json');
+  if (data) {
+    cachedProducts = data;
+    return res.json(data);
   }
+  res.json([]);
 });
 
 app.get('/api/sapo/meta', async (_req, res) => {
   if (cachedMeta) return res.json(cachedMeta);
-  try {
-    const raw = await fs.readFile(META_FILE, 'utf-8');
-    cachedMeta = JSON.parse(raw);
-    res.json(cachedMeta);
-  } catch {
-    res.json({ count: 0, lastUpdated: null });
+  const data = await readJson('sapo-meta.json');
+  if (data) {
+    cachedMeta = data;
+    return res.json(data);
   }
+  res.json({ count: 0, lastUpdated: null });
 });
 
 app.post('/api/sapo/sync', async (_req, res) => {
@@ -174,17 +226,16 @@ app.post('/api/sapo/sync', async (_req, res) => {
       if (stillFailed > 0) console.warn(`[sync] ${stillFailed} pages still failed after retry`);
     }
 
-    await fs.mkdir(DATA_DIR, { recursive: true }).catch(() => {});
     const lastUpdated = new Date().toISOString();
-    await fs.writeFile(PRODUCTS_FILE, JSON.stringify(allProducts), 'utf-8');
-    await fs.writeFile(META_FILE, JSON.stringify({ count: allProducts.length, lastUpdated }), 'utf-8');
+    const meta: SyncResult = { count: allProducts.length, lastUpdated };
+    await writeJson('sapo-products.json', allProducts);
+    await writeJson('sapo-meta.json', meta);
 
-    const result: SyncResult = { count: allProducts.length, lastUpdated };
     // Populate memory cache so GET /api/sapo/products returns instantly
     cachedProducts = allProducts;
-    cachedMeta = result;
-    console.log(`[sync] Done! ${result.count} products synced.`);
-    res.json(result);
+    cachedMeta = meta;
+    console.log(`[sync] Done! ${meta.count} products synced.`);
+    res.json(meta);
   } catch (err: any) {
     console.error('[sync] Error:', err.message);
     res.status(500).json({ error: err.message || 'Sync failed' });
