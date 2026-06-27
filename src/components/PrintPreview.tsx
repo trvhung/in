@@ -245,10 +245,6 @@ export function PrintPreview({
                   </div>
                 </div>
 
-                {/* Target Indicator badge */}
-                <div className="absolute top-0.5 right-0.5 px-1 bg-blue-600 text-[8px] text-white rounded uppercase font-bold pointer-events-none z-20">
-                  Đang xem
-                </div>
               </div>
             ) : activeTemplate.id === 'list-price' ? (
               /* Tem Giá Niêm Yết Preview - scaled 3x */
@@ -264,12 +260,12 @@ export function PrintPreview({
                 {/* Name + Price row */}
                 <div className="flex justify-between items-center w-full gap-1">
                   {activeTemplate.showName && (
-                    <div className="text-[6px] font-semibold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
+                    <div className="text-[8px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
                       {activeProduct.name}
                     </div>
                   )}
                   {activeTemplate.showPrice && (
-                    <span className="text-[7px] font-bold text-gray-900 shrink-0">
+                    <span className="text-[9px] font-extrabold text-gray-900 shrink-0">
                       {activeProduct.price === 0 ? '0đ' : activeProduct.price.toLocaleString('vi-VN') + 'đ'}
                     </span>
                   )}
@@ -281,15 +277,15 @@ export function PrintPreview({
                     <Barcode
                       value={activeProduct.barcode || activeProduct.sku}
                       displayValue={activeTemplate.showBarcodeText}
-                      height={22}
-                      fontSize={5}
+                      height={24}
+                      fontSize={6}
                     />
                   </div>
                 )}
 
                 {/* Giá niêm yết - bottom */}
                 {activeTemplate.showComparePrice && activeProduct.comparePrice && activeProduct.comparePrice > 0 && (
-                  <div className="text-[6px] text-gray-500 w-full text-right">
+                  <div className="text-[7px] font-bold text-gray-600 w-full text-right">
                     Giá NY: {activeProduct.comparePrice.toLocaleString('vi-VN')}đ
                   </div>
                 )}

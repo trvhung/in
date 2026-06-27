@@ -403,12 +403,12 @@ export default function App() {
                   {/* Name + Price row */}
                   <div className="flex justify-between items-center w-full gap-1">
                     {activeTemplate.showName && (
-                      <div className="text-[6px] font-semibold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
+                      <div className="text-[8px] font-bold text-gray-900 leading-tight line-clamp-1 uppercase text-left flex-1">
                         {p.name}
                       </div>
                     )}
                     {activeTemplate.showPrice && (
-                      <span className="text-[7px] font-bold text-gray-900 shrink-0">
+                      <span className="text-[9px] font-extrabold text-gray-900 shrink-0">
                         {p.price === 0 ? '0đ' : p.price.toLocaleString('vi-VN') + 'đ'}
                       </span>
                     )}
@@ -420,15 +420,15 @@ export default function App() {
                       <Barcode
                         value={p.barcode || p.sku}
                         displayValue={activeTemplate.showBarcodeText}
-                        height={22}
-                        fontSize={5}
+                        height={24}
+                        fontSize={6}
                       />
                     </div>
                   )}
 
                   {/* Giá niêm yết - bottom */}
                   {activeTemplate.showComparePrice && p.comparePrice && p.comparePrice > 0 && (
-                    <div className="text-[6px] text-gray-500 w-full text-right">
+                    <div className="text-[7px] font-bold text-gray-600 w-full text-right">
                       Giá NY: {p.comparePrice.toLocaleString('vi-VN')}đ
                     </div>
                   )}
