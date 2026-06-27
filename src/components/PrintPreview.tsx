@@ -176,74 +176,58 @@ export function PrintPreview({
         >
           {activeProduct ? (
             activeTemplate.id === 'sale-yellow' ? (
-              /* Custom Yellow Sale Tag Preview matching user's reference image */
+              /* Sale Vàng Preview */
               <div
-                className="bg-[#FFEE00] text-black transition-all flex flex-col justify-between relative select-none w-full p-4 flex-1 text-left"
+                className="bg-[#FFEE00] text-black transition-all flex flex-col justify-between relative select-none w-full flex-1 text-left"
                 style={{
                   minHeight: '220px',
                 }}
               >
-                {/* Top Row: Red Box + Product Name */}
-                <div className="flex gap-3.5 items-start w-full">
-                  {/* Red Box in top-left */}
-                  <div className="bg-[#E30613] text-white flex flex-col items-center justify-center p-2 font-bold leading-none w-[72px] h-[72px] shrink-0 rounded select-none shadow-xs">
-                    <div className="text-[11px] tracking-widest uppercase font-black">SALE</div>
-                    <div className="text-[26px] font-black mt-1 leading-none tracking-tighter">
-                      {getDiscountPercent(activeProduct)}%
+                {/* SALE box sát góc trên-trái */}
+                <div className="absolute top-0 left-0 bg-[#E30613] text-white flex flex-col items-center justify-center font-bold leading-none w-[64px] h-[64px] select-none">
+                  <div className="text-[10px] tracking-widest uppercase font-black">SALE</div>
+                  <div className="text-[24px] font-black mt-0.5 leading-none tracking-tighter">
+                    {getDiscountPercent(activeProduct)}%
+                  </div>
+                </div>
+
+                {/* Nội dung chính */}
+                <div className="flex-1 flex flex-col justify-between pt-2 pr-3 pb-2 pl-[70px]">
+                  <div>
+                    {activeTemplate.showName && (
+                      <div className="text-[12px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight">
+                        {activeProduct.name}
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-end mt-1.5">
+                      {activeTemplate.showSku && (
+                        <div className="text-[11px] font-medium text-slate-700 tracking-wide font-sans">
+                          {activeProduct.sku}
+                        </div>
+                      )}
+                      {activeTemplate.showComparePrice && activeProduct.price > 0 && activeProduct.comparePrice && activeProduct.comparePrice > activeProduct.price && (
+                        <span className="text-[12px] text-slate-600 line-through font-medium tracking-tight">
+                          {activeProduct.comparePrice.toLocaleString('vi-VN')}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Product Name on the top-right */}
-                  {activeTemplate.showName && (
-                    <div className="text-[13px] font-extrabold text-slate-950 leading-tight line-clamp-3 uppercase tracking-tight flex-1 pt-1">
-                      {activeProduct.name}
-                    </div>
-                  )}
-                </div>
-
-                {/* Middle Row: SKU (Left) & Compare Price (Right) */}
-                <div className="flex justify-between items-end mt-2 w-full px-1">
-                  {/* SKU */}
-                  {activeTemplate.showSku && (
-                    <div className="text-[12px] font-extrabold text-slate-900 tracking-wide font-sans">
-                      {activeProduct.sku}
-                    </div>
-                  )}
-
-                  {/* Compare Price */}
-                  {activeTemplate.showComparePrice && activeProduct.comparePrice && activeProduct.comparePrice > 0 ? (
-                    <span className="text-[14px] text-slate-700 line-through font-bold tracking-tight">
-                      {activeProduct.comparePrice.toLocaleString('vi-VN')}
-                    </span>
-                  ) : null}
-                </div>
-
-                {/* Bottom Row: Giant Promo Price */}
-                <div className="flex items-baseline justify-between -mt-0.5 w-full px-1">
-                  {activeTemplate.showPrice && (
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-[36px] font-black text-[#E30613] leading-none tracking-tight">
-                        {activeProduct.price.toLocaleString('vi-VN')}
-                      </span>
-                      <span className="text-[15px] font-black text-[#E30613] ml-0.5 tracking-wider">VND</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Toggleable Barcode overlay */}
-                {activeTemplate.showBarcode !== false && (
-                  <div className="absolute right-4 bottom-[48px] bg-white px-1 py-0.5 rounded border border-amber-300 shadow-2xs max-w-[110px] z-10">
-                    <Barcode
-                      value={activeProduct.barcode || activeProduct.sku}
-                      displayValue={activeTemplate.showBarcodeText}
-                      height={16}
-                      fontSize={6}
-                    />
+                  <div className="flex items-baseline">
+                    {activeTemplate.showPrice && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[38px] font-black text-[#E30613] leading-none tracking-tight">
+                          {(activeProduct.price > 0 ? activeProduct.price : (activeProduct.comparePrice || 0)).toLocaleString('vi-VN')}
+                        </span>
+                        <span className="text-[13px] font-bold text-[#E30613] tracking-wider">VND</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
 
                 {/* Target Indicator badge */}
-                <div className="absolute top-1.5 right-1.5 px-1 bg-blue-600 text-[8px] text-white rounded uppercase font-bold pointer-events-none z-20">
+                <div className="absolute top-0.5 right-0.5 px-1 bg-blue-600 text-[8px] text-white rounded uppercase font-bold pointer-events-none z-20">
                   Đang xem
                 </div>
               </div>
