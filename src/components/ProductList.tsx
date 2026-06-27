@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
 import { Product } from '../types';
-import { Search, Plus, Trash2, Camera, HelpCircle, Layers, X, PlusCircle } from 'lucide-react';
+import { Search, Upload, Download, HelpCircle, Layers, X } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 interface ProductListProps {
   products: Product[];
   onUpdateProduct: (id: string, updates: Partial<Product>) => void;
   onDeleteProduct: (id: string) => void;
   onAddProduct: (product: Product) => void;
-  onOpenScanner: () => void;
+  onAddProducts: (products: Product[]) => void;
   onOpenMultiSelect: () => void;
   activeProductId: string | null;
   onSelectProduct: (id: string) => void;
@@ -19,7 +20,7 @@ export function ProductList({
   onUpdateProduct,
   onDeleteProduct,
   onAddProduct,
-  onOpenScanner,
+  onAddProducts,
   onOpenMultiSelect,
   activeProductId,
   onSelectProduct,
@@ -85,6 +86,97 @@ export function ProductList({
   const parseNumber = (str: string) => {
     const clean = str.replace(/\D/g, '');
     return parseInt(clean) || 0;
+  };
+
+  // ── Excel Upload ──────────────────────────────────────────────────
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExcelUpload = (e: any) => {
+    const file = e.target.files?.[0] as File | undefined;
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        // Find header row (look for "sku" in first row)
+        const headerIdx = rows.findIndex((r: any[]) =>
+          r.some((cell: any) => String(cell || '').toLowerCase().includes('sku'))
+        );
+        if (headerIdx < 0) {
+          alert('File Excel không đúng định dạng. Vui lòng tải file mẫu.');
+          return;
+        }
+
+        const newProducts: Product[] = [];
+        for (let i = headerIdx + 1; i < rows.length; i++) {
+          const row = rows[i];
+          const sku = String(row[0] || '').trim();
+          const priceRaw = String(row[1] || '0').trim();
+          const compareRaw = String(row[2] || '0').trim();
+
+          if (!sku) continue;
+
+          const excelPrice = parseNumber(priceRaw);
+          const excelCompare = parseNumber(compareRaw);
+
+          // Look up product from Sapo master by SKU
+          const masterMatch = masterProducts.find(
+            (m) => m.sku.toLowerCase() === sku.toLowerCase()
+          );
+
+          if (masterMatch) {
+            newProducts.push({
+              ...masterMatch,
+              quantity: 1,
+              price: excelPrice || masterMatch.price,
+              comparePrice: excelCompare || masterMatch.comparePrice || 0,
+            });
+          } else {
+            // Create custom product from Excel data
+            newProducts.push({
+              id: 'excel-' + Date.now() + '-' + i,
+              name: sku,
+              sku: sku,
+              barcode: '',
+              quantity: 1,
+              price: excelPrice,
+              comparePrice: excelCompare,
+            });
+          }
+        }
+
+        if (newProducts.length > 0) {
+          onAddProducts(newProducts);
+        } else {
+          alert('Không tìm thấy dữ liệu sản phẩm trong file.');
+        }
+      } catch (err: any) {
+        alert('Lỗi đọc file Excel: ' + (err.message || 'File không hợp lệ'));
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    // Reset input để có thể chọn lại cùng file
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDownloadSample = () => {
+    const wb = XLSX.utils.book_new();
+    const sampleData = [
+      ['SKU', 'Giá bán', 'Giá niêm yết'],
+      ['SP001', '150000', '200000'],
+      ['SP002', '85000', '120000'],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(sampleData);
+    // Set column widths
+    ws['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách sản phẩm');
+    XLSX.writeFile(wb, 'mau-upload-san-pham.xlsx');
   };
 
   return (
@@ -190,13 +282,30 @@ export function ProductList({
             Chọn nhiều
           </button>
 
-          {/* Quét mã vạch button */}
+          {/* Upload Excel button */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleExcelUpload}
+            className="hidden"
+            id="excel-upload"
+          />
           <button
-            onClick={onOpenScanner}
+            onClick={() => fileInputRef.current?.click()}
             className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold active:scale-98 transition-all flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
           >
-            <Camera className="w-4.5 h-4.5" />
-            Quét mã vạch
+            <Upload className="w-4.5 h-4.5" />
+            Upload Excel
+          </button>
+
+          {/* Tải file mẫu */}
+          <button
+            onClick={handleDownloadSample}
+            className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 active:scale-98 transition-all flex items-center gap-1 shadow-sm shrink-0 cursor-pointer"
+            title="Tải file Excel mẫu"
+          >
+            <Download className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -208,7 +317,7 @@ export function ProductList({
         </div>
         <div className="col-span-2 text-center">SL tem ({totalQty})</div>
         <div className="col-span-2 text-center">Giá bán</div>
-        <div className="col-span-2 text-center">Giá so sánh</div>
+        <div className="col-span-2 text-center">Giá niêm yết</div>
         <div className="col-span-1 text-right"></div>
       </div>
 
@@ -325,7 +434,7 @@ export function ProductList({
       {/* Info Help Banner */}
       <div className="mt-3.5 text-[11px] text-gray-400 flex items-center gap-1.5">
         <HelpCircle className="w-3.5 h-3.5 text-gray-300" />
-        <span>Gợi ý: Quét mã vạch camera sau sẽ tự dò sản phẩm trong danh mục và gán SL in lên +1 tem.</span>
+        <span>Gợi ý: Upload file Excel (SKU, Giá bán, Giá niêm yết) để thêm nhanh sản phẩm vào danh sách in.</span>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ export interface Product {
   barcode: string;
   quantity: number;
   price: number;
-  comparePrice?: number; // "Giá so sánh" shown in screenshot
+  comparePrice?: number; // "Giá niêm yết"
   category?: string; // For filtering in "Chọn nhiều" popup
   image?: string;
 }

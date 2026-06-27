@@ -174,7 +174,7 @@ export function PrintLayout({ products, template, onClose }: PrintLayoutProps) {
                     )}
                   </div>
 
-                  {/* Middle Row: SKU (Left) & Compare Price (Right) */}
+                  {/* Middle Row: SKU (Left) & Giá niêm yết (Right) */}
                   <div className="flex justify-between items-end mt-2 w-full px-0.5">
                     {/* SKU */}
                     {template.showSku && (
@@ -183,7 +183,7 @@ export function PrintLayout({ products, template, onClose }: PrintLayoutProps) {
                       </div>
                     )}
 
-                    {/* Compare Price */}
+                    {/* Giá niêm yết */}
                     {template.showComparePrice && p.comparePrice && p.comparePrice > 0 ? (
                       <span className="text-[12px] text-slate-700 line-through font-bold tracking-tight">
                         {p.comparePrice.toLocaleString('vi-VN')}

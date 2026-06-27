@@ -142,7 +142,7 @@ export function PrintPreview({
               onClick={() => onUpdateTemplateOptions({ showComparePrice: !activeTemplate.showComparePrice })}
               className="flex items-center justify-between py-0.5 hover:text-gray-900"
             >
-              <span>Hiện giá so sánh (gạch ngang)</span>
+              <span>Hiện giá niêm yết (gạch ngang)</span>
               {activeTemplate.showComparePrice ? (
                 <ToggleRight className="w-5 h-5 text-blue-600" />
               ) : (
@@ -166,20 +166,23 @@ export function PrintPreview({
 
         {/* Single Label Realistic Preview Stage */}
         <div className={`rounded-xl flex flex-col items-center justify-center transition-all overflow-hidden ${
-          activeTemplate.id === 'sale-yellow'
-            ? 'bg-transparent border-0 p-0 shadow-none'
+          activeTemplate.id.startsWith('sale-')
+            ? 'bg-transparent p-2'
             : 'bg-gray-100 border border-gray-200 p-5'
         }`}
-        style={activeTemplate.id === 'sale-yellow' ? {} : { minHeight: '220px' }}
+        style={activeTemplate.id.startsWith('sale-') ? {} : { minHeight: '220px' }}
         >
           {activeProduct ? (
-            activeTemplate.id === 'sale-yellow' ? (
-              /* Sale Vàng Preview - exact print size 70x40mm */
+            activeTemplate.id.startsWith('sale-') ? (
+              /* Sale Preview - exact print size */
               <div
-                className="bg-[#FFEE00] text-black transition-all flex flex-col justify-between relative select-none text-left"
+                className="text-black transition-all flex flex-col justify-between relative select-none text-left border border-gray-300"
                 style={{
-                  width: '70mm',
-                  height: '40mm',
+                  width: activeTemplate.width,
+                  height: activeTemplate.height,
+                  backgroundColor:
+                    activeTemplate.id === 'sale-white' ? '#FFFFFF' :
+                    activeTemplate.id === 'sale-blue' ? '#E8F4FD' : '#FFEE00',
                 }}
               >
                 {/* SALE box sát góc trên-trái */}
@@ -202,7 +205,7 @@ export function PrintPreview({
                   {/* Spacer pushes SKU/price to middle-bottom */}
                   <div className="flex-1" />
 
-                  {/* SKU + Compare Price - sát trên giá, full width */}
+                  {/* SKU + Giá niêm yết - sát trên giá, full width */}
                   <div className="flex justify-between items-end px-1">
                     {activeTemplate.showSku && (
                       <div className="text-[14px] font-medium text-slate-700 tracking-wide font-sans">

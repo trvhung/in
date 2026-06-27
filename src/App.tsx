@@ -2,22 +2,16 @@ import { useState } from 'react';
 import { Product, LabelTemplate } from './types';
 import { ProductList } from './components/ProductList';
 import { PrintPreview } from './components/PrintPreview';
-import { BarcodeScanner } from './components/BarcodeScanner';
 import { PrintLayout } from './components/PrintLayout';
 import { Barcode } from './components/Barcode';
 import { MultiSelectModal } from './components/MultiSelectModal';
 import { useMasterProducts } from './hooks/useMasterProducts';
-import { 
-  Printer, 
-  Camera, 
+import {
+  Printer,
   Smartphone,
   CheckCircle2,
-  Trash2,
-  ListRestart,
   RefreshCw,
   Database,
-  Calendar,
-  Layers
 } from 'lucide-react';
 
 const INITIAL_TEMPLATES: LabelTemplate[] = [
@@ -28,6 +22,34 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
     height: '40mm',
     columns: 1,
     description: 'Khổ cài mica kệ hàng 70x40mm màu vàng có viền đỏ',
+    showName: true,
+    showPrice: true,
+    showComparePrice: true,
+    showSku: true,
+    showBarcodeText: false,
+    showBarcode: false,
+  },
+  {
+    id: 'sale-white',
+    name: 'Tem Sale Trắng (Mica 70x40mm)',
+    width: '70mm',
+    height: '40mm',
+    columns: 1,
+    description: 'Khổ cài mica kệ hàng 70x40mm nền trắng',
+    showName: true,
+    showPrice: true,
+    showComparePrice: true,
+    showSku: true,
+    showBarcodeText: false,
+    showBarcode: false,
+  },
+  {
+    id: 'sale-blue',
+    name: 'Tem Sale Xanh (Mica 70x40mm)',
+    width: '70mm',
+    height: '40mm',
+    columns: 1,
+    description: 'Khổ cài mica kệ hàng 70x40mm nền xanh',
     showName: true,
     showPrice: true,
     showComparePrice: true,
@@ -84,10 +106,9 @@ export default function App() {
   const [activeProductId, setActiveProductId] = useState<string>('m1');
   const [templates, setTemplates] = useState<LabelTemplate[]>(INITIAL_TEMPLATES);
   const [activeTemplateId, setActiveTemplateId] = useState<string>('sale-yellow');
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isPrintLayoutOpen, setIsPrintLayoutOpen] = useState(false);
   const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
-  
+
   // Master products from Sapo
   const {
     masterProducts,
@@ -100,14 +121,6 @@ export default function App() {
   // Sapo sync states
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccessMessage, setSyncSuccessMessage] = useState(false);
-
-  // Scanned action state
-  const [scannedFeedback, setScannedFeedback] = useState<{
-    barcode: string;
-    productName?: string;
-    assigned?: boolean;
-    created?: boolean;
-  } | null>(null);
 
   const handleSyncSapo = async () => {
     setIsSyncing(true);
@@ -147,23 +160,38 @@ export default function App() {
     }
   };
 
-  // Add product from live search or manual action
+  // Add single product from live search
   const handleAddProduct = (itemToAdd: Product) => {
     const existing = products.find((p) => p.sku === itemToAdd.sku || (p.barcode && p.barcode === itemToAdd.barcode));
-    
+
     if (existing) {
-      // If already in print list, select it and make sure quantity is at least 1
       const newQty = existing.quantity === 0 ? 1 : existing.quantity + 1;
       handleUpdateProduct(existing.id, { quantity: newQty });
       setActiveProductId(existing.id);
     } else {
-      // Add as new staged product
-      const newStagedProduct: Product = {
-        ...itemToAdd,
-        quantity: 1, // Default quantity of 1 when freshly added to printable table
-      };
-      setProducts((prev) => [newStagedProduct, ...prev]);
+      setProducts((prev) => [{ ...itemToAdd, quantity: 1 }, ...prev]);
       setActiveProductId(itemToAdd.id);
+    }
+  };
+
+  // Batch add products (from Excel upload)
+  const handleAddProducts = (itemsToAdd: Product[]) => {
+    setProducts((prev) => {
+      const list = [...prev];
+      for (const item of itemsToAdd) {
+        const existing = list.find(
+          (p) => p.sku === item.sku || (p.barcode && p.barcode === item.barcode)
+        );
+        if (existing) {
+          existing.quantity = existing.quantity + 1;
+        } else {
+          list.push({ ...item, quantity: 1 });
+        }
+      }
+      return list;
+    });
+    if (itemsToAdd.length > 0) {
+      setActiveProductId(itemsToAdd[0].id);
     }
   };
 
@@ -200,68 +228,6 @@ export default function App() {
     );
   };
 
-  // Barcode scanned callback
-  const handleBarcodeScanned = (barcode: string) => {
-    // Look for product in master or staged list
-    const match = products.find(
-      (p) => p.barcode === barcode || p.sku.toLowerCase() === barcode.toLowerCase()
-    );
-
-    if (match) {
-      handleUpdateProduct(match.id, { quantity: match.quantity + 1 });
-      setActiveProductId(match.id);
-      setScannedFeedback({
-        barcode,
-        productName: match.name,
-        assigned: false,
-        created: false,
-      });
-    } else {
-      // Check if it's in the Master list
-      const masterMatch = masterProducts.find(
-        (m) => m.barcode === barcode || m.sku.toLowerCase() === barcode.toLowerCase()
-      );
-
-      if (masterMatch) {
-        handleAddProduct(masterMatch);
-        setScannedFeedback({
-          barcode,
-          productName: masterMatch.name,
-          assigned: false,
-          created: false,
-        });
-      } else {
-        // Create custom product
-        const newId = 'custom-' + Date.now();
-        const autoName = `Sản phẩm quét mới #${barcode.substring(0, 4)}`;
-        const newProduct: Product = {
-          id: newId,
-          name: autoName,
-          sku: 'SKU-' + barcode.substring(0, 6).toUpperCase(),
-          barcode,
-          quantity: 1,
-          price: 0,
-          comparePrice: 0,
-        };
-        setProducts((prev) => [newProduct, ...prev]);
-        setActiveProductId(newId);
-        setScannedFeedback({
-          barcode,
-          productName: autoName,
-          assigned: false,
-          created: true,
-        });
-      }
-    }
-
-    setIsScannerOpen(false);
-
-    // Auto-clear feedback after 4 seconds
-    setTimeout(() => {
-      setScannedFeedback(null);
-    }, 4500);
-  };
-
   const printableLabels = products.flatMap((p) =>
     Array.from({ length: p.quantity }, () => p)
   );
@@ -294,40 +260,6 @@ export default function App() {
 
         <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 flex flex-col gap-6">
           
-          {/* Notification Feedback after scanning */}
-          {scannedFeedback && (
-            <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center justify-between gap-3 animate-fade-in shadow-sm">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                <div className="text-xs">
-                  {scannedFeedback.assigned ? (
-                    <p>
-                      Đã gán thành công mã vạch <strong className="text-black">{scannedFeedback.barcode}</strong> cho sản phẩm{' '}
-                      <strong>"{scannedFeedback.productName}"</strong>!
-                    </p>
-                  ) : scannedFeedback.created ? (
-                    <p>
-                      Không tìm thấy sản phẩm! Đã tự tạo sản phẩm mới{' '}
-                      <strong>"{scannedFeedback.productName}"</strong> với mã vạch{' '}
-                      <strong className="text-black">{scannedFeedback.barcode}</strong>.
-                    </p>
-                  ) : (
-                    <p>
-                      Đã tìm thấy sản phẩm <strong>"{scannedFeedback.productName}"</strong>!{' '}
-                      Tự động tăng số lượng in thêm <strong className="text-black">1 tem</strong>.
-                    </p>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => setScannedFeedback(null)}
-                className="text-green-500 hover:text-green-700 text-xs font-bold"
-              >
-                Đóng
-              </button>
-            </div>
-          )}
-
           {/* Sapo Integration Sync Panel */}
           <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs relative overflow-hidden transition-all duration-300">
             {/* Top decorative gradient bar */}
@@ -384,7 +316,7 @@ export default function App() {
                 onUpdateProduct={handleUpdateProduct}
                 onDeleteProduct={handleDeleteProduct}
                 onAddProduct={handleAddProduct}
-                onOpenScanner={() => setIsScannerOpen(true)}
+                onAddProducts={handleAddProducts}
                 onOpenMultiSelect={() => setIsMultiSelectOpen(true)}
                 activeProductId={activeProductId}
                 onSelectProduct={setActiveProductId}
@@ -409,15 +341,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* 2. LIVE CAMERA BARCODE SCANNER MODAL */}
-      {isScannerOpen && (
-        <BarcodeScanner
-          onScan={handleBarcodeScanned}
-          onClose={() => setIsScannerOpen(false)}
-        />
-      )}
-
-      {/* 3. PHYSICAL PRINT BATCH PREVIEW MODAL */}
+      {/* 2. PHYSICAL PRINT BATCH PREVIEW MODAL */}
       {isPrintLayoutOpen && (
         <PrintLayout
           products={products}
@@ -445,22 +369,25 @@ export default function App() {
           }}
         >
           {printableLabels.map((p, index) => {
-            const sizeWidth = activeTemplate.id === 'sale-yellow'
-              ? '70mm'
+            const sizeWidth = activeTemplate.id.startsWith('sale-')
+              ? activeTemplate.width
               : activeTemplate.id === 'single-small'
               ? '50mm'
               : activeTemplate.id === 'supermarket'
               ? '35mm'
               : '37.5mm';
-            const sizeHeight = activeTemplate.id === 'sale-yellow'
-              ? '40mm'
+            const sizeHeight = activeTemplate.id.startsWith('sale-')
+              ? activeTemplate.height
               : activeTemplate.id === 'single-small'
               ? '30mm'
               : activeTemplate.id === 'supermarket'
               ? '22mm'
               : '50mm';
 
-            if (activeTemplate.id === 'sale-yellow') {
+            if (activeTemplate.id.startsWith('sale-')) {
+              const isSaleWhite = activeTemplate.id === 'sale-white';
+              const isSaleBlue = activeTemplate.id === 'sale-blue';
+              const bgColor = isSaleWhite ? '#FFFFFF' : isSaleBlue ? '#E8F4FD' : '#FFEE00';
               // Auto-calculate discount: nếu có price và comparePrice > price
               const discountPercent = p.price > 0 && p.comparePrice && p.comparePrice > p.price
                 ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100)
@@ -472,11 +399,12 @@ export default function App() {
               return (
                 <div
                   key={index}
-                  className="bg-[#FFEE00] flex flex-col justify-between text-black transition-all overflow-hidden relative select-none text-left"
+                  className="flex flex-col justify-between text-black transition-all overflow-hidden relative select-none text-left border border-gray-300"
                   style={{
                     width: sizeWidth,
                     height: sizeHeight,
                     pageBreakInside: 'avoid',
+                    backgroundColor: bgColor,
                   }}
                 >
                   {/* SALE box sát góc trên-trái */}
@@ -499,7 +427,7 @@ export default function App() {
                     {/* Spacer pushes SKU/price to middle-bottom */}
                     <div className="flex-1" />
 
-                    {/* SKU + Compare Price - sát trên giá, full width */}
+                    {/* SKU + Giá niêm yết - sát trên giá, full width */}
                     <div className="flex justify-between items-end px-1">
                       {activeTemplate.showSku && (
                         <div className="text-[14px] font-medium text-slate-700 tracking-wide font-sans">
