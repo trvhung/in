@@ -200,20 +200,8 @@ export function PrintPreview({
                     </div>
                   )}
 
-                  {/* Big Price - middle, takes remaining space */}
-                  <div className="flex-1 flex items-center">
-                    {activeTemplate.showPrice && (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-[48px] font-bold text-[#E30613] leading-none tracking-tight">
-                          {(activeProduct.price > 0 ? activeProduct.price : (activeProduct.comparePrice || 0)).toLocaleString('vi-VN')}
-                        </span>
-                        <span className="text-[13px] font-semibold text-[#E30613] tracking-wider">VND</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* SKU + Compare Price - bottom */}
-                  <div className="flex justify-between items-end">
+                  {/* SKU + Compare Price - above price */}
+                  <div className="flex justify-between items-end mt-0.5">
                     {activeTemplate.showSku && (
                       <div className="text-[10px] font-medium text-slate-700 tracking-wide font-sans">
                         {activeProduct.sku}
@@ -223,6 +211,18 @@ export function PrintPreview({
                       <span className="text-[11px] text-slate-600 line-through font-medium tracking-tight">
                         {activeProduct.comparePrice.toLocaleString('vi-VN')}
                       </span>
+                    )}
+                  </div>
+
+                  {/* Big Price - bottom, takes remaining space */}
+                  <div className="flex-1 flex items-end">
+                    {activeTemplate.showPrice && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[48px] font-bold text-[#E30613] leading-none tracking-tight">
+                          {(activeProduct.price > 0 ? activeProduct.price : (activeProduct.comparePrice || 0)).toLocaleString('vi-VN')}
+                        </span>
+                        <span className="text-[13px] font-semibold text-[#E30613] tracking-wider">VND</span>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -496,20 +496,8 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Big Price - middle, takes remaining space */}
-                    <div className="flex-1 flex items-center">
-                      {activeTemplate.showPrice && (
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-[44px] font-bold text-[#E30613] leading-none tracking-tight">
-                            {displayPrice.toLocaleString('vi-VN')}
-                          </span>
-                          <span className="text-[11px] font-semibold text-[#E30613] tracking-wider">VND</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* SKU + Compare Price - bottom */}
-                    <div className="flex justify-between items-end">
+                    {/* SKU + Compare Price - above price */}
+                    <div className="flex justify-between items-end mt-0.5">
                       {activeTemplate.showSku && (
                         <div className="text-[9px] font-medium text-slate-700 tracking-wide font-sans">
                           {p.sku}
@@ -519,6 +507,18 @@ export default function App() {
                         <span className="text-[10px] text-slate-600 line-through font-medium tracking-tight">
                           {p.comparePrice!.toLocaleString('vi-VN')}
                         </span>
+                      )}
+                    </div>
+
+                    {/* Big Price - bottom, takes remaining space */}
+                    <div className="flex-1 flex items-end">
+                      {activeTemplate.showPrice && (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-[44px] font-bold text-[#E30613] leading-none tracking-tight">
+                            {displayPrice.toLocaleString('vi-VN')}
+                          </span>
+                          <span className="text-[11px] font-semibold text-[#E30613] tracking-wider">VND</span>
+                        </div>
                       )}
                     </div>
                   </div>
