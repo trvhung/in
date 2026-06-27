@@ -488,10 +488,10 @@ export default function App() {
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 flex flex-col pt-1.5 pr-2 pb-0.5 pl-[60px]">
-                    {/* Product Name - top */}
+                  <div className="flex-1 flex flex-col pt-1.5 pb-0.5">
+                    {/* Product Name - top, clears SALE box */}
                     {activeTemplate.showName && (
-                      <div className="text-[10px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight">
+                      <div className="text-[10px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight pl-[60px] pr-1">
                         {p.name}
                       </div>
                     )}
@@ -499,8 +499,8 @@ export default function App() {
                     {/* Spacer pushes SKU/price to middle-bottom */}
                     <div className="flex-1" />
 
-                    {/* SKU + Compare Price - sát trên giá */}
-                    <div className="flex justify-between items-end">
+                    {/* SKU + Compare Price - sát trên giá, full width */}
+                    <div className="flex justify-between items-end px-1">
                       {activeTemplate.showSku && (
                         <div className="text-[14px] font-medium text-slate-700 tracking-wide font-sans">
                           {p.sku}
@@ -511,12 +511,11 @@ export default function App() {
                           {p.comparePrice!.toLocaleString('vi-VN')}
                         </span>
                       )}
-                      {/* Placeholder giữ cân bằng nếu thiếu 1 bên */}
                       {!activeTemplate.showSku && <div />}
                       {!hasStrikeThrough && activeTemplate.showComparePrice && <div />}
                     </div>
 
-                    {/* Big Price - bottom, centered */}
+                    {/* Big Price - bottom, centered, full width */}
                     <div className="flex justify-center items-baseline">
                       {activeTemplate.showPrice && (
                         <>
