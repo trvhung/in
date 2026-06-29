@@ -123,36 +123,37 @@ export function PalletLabelPage() {
             </div>
           </div>
 
-          {/* Label Demo Preview — horizontal orientation (rotated 90° from actual print) */}
+          {/* Label Demo Preview — actual portrait orientation, scaled */}
           <div className="mb-6">
             <div className="flex items-center gap-1.5 mb-2">
               <Eye className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-xs text-gray-500 font-medium">Demo tem (ngang)</span>
-              <span className="text-[10px] text-gray-400">— 22×95mm</span>
+              <span className="text-xs text-gray-500 font-medium">Demo tem</span>
+              <span className="text-[10px] text-gray-400">— 22×95mm (dọc)</span>
             </div>
-            <div className="bg-white border border-dashed border-gray-300 rounded-lg p-3 flex justify-center">
-              {/* Label shown horizontally: 95mm × 22mm → scaled × 3 */}
+            <div className="bg-white border border-dashed border-gray-300 rounded-lg p-4 flex justify-center">
+              {/* Actual label: 22mm × 95mm portrait → scaled × 2 */}
               <div
-                className="bg-white flex flex-col items-center justify-center"
+                className="bg-white flex flex-col items-center justify-between"
                 style={{
-                  width: '285px',   // 95mm × 3
-                  height: '66px',   // 22mm × 3
+                  width: '44mm',    // 22mm × 2
+                  height: '190mm',  // 95mm × 2
                   border: 'none',
                   padding: 0,
                 }}
               >
-                {/* Barcode — top, fills most of width */}
-                <div className="w-full flex items-center justify-center overflow-hidden" style={{ height: '50px' }}>
+                {/* Barcode rotated 90° — bars run horizontally across 22mm width */}
+                <div className="flex-1 flex items-center justify-center w-full overflow-hidden">
                   <Barcode
                     value={firstCode}
                     format="CODE128"
-                    height={46}
-                    width={1.8}
+                    height={42}
+                    width={1.4}
                     displayValue={false}
                     margin={8}
+                    rotate={true}
                   />
                 </div>
-                {/* Code text — below barcode, Arial 7pt */}
+                {/* Code text — rotated 90°, displayed vertically */}
                 <div
                   className="flex items-center justify-center"
                   style={{
@@ -161,16 +162,15 @@ export function PalletLabelPage() {
                     fontWeight: 400,
                     color: '#000',
                     whiteSpace: 'nowrap',
-                    height: '16px',
+                    height: '16mm',
+                    writingMode: 'vertical-rl',
+                    textOrientation: 'mixed',
                   }}
                 >
                   {firstCode}
                 </div>
               </div>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-              Tem thực tế xoay dọc 90°. Trên đây là góc nhìn ngang để dễ đọc.
-            </p>
           </div>
 
           {/* Download PDF button */}
