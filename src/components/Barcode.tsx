@@ -8,6 +8,8 @@ interface BarcodeProps {
   height?: number;
   displayValue?: boolean;
   fontSize?: number;
+  rotate?: boolean;
+  margin?: number;
 }
 
 export function Barcode({
@@ -17,6 +19,8 @@ export function Barcode({
   height = 40,
   displayValue = false,
   fontSize = 11,
+  rotate = false,
+  margin = 4,
 }: BarcodeProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -29,7 +33,7 @@ export function Barcode({
           height,
           displayValue,
           fontSize,
-          margin: 4,
+          margin,
           background: 'transparent',
           lineColor: '#000000',
         });
@@ -37,7 +41,7 @@ export function Barcode({
         console.error('JsBarcode failed to render barcode:', err);
       }
     }
-  }, [value, format, width, height, displayValue, fontSize]);
+  }, [value, format, width, height, displayValue, fontSize, margin]);
 
   if (!value) {
     return (
@@ -47,9 +51,19 @@ export function Barcode({
     );
   }
 
-  return (
+  const barcodeSvg = (
     <div className="flex justify-center items-center overflow-hidden">
       <svg ref={svgRef} id={`barcode-${value}`} className="max-w-full h-auto" />
     </div>
   );
+
+  if (rotate) {
+    return (
+      <div className="flex justify-center items-center" style={{ transform: 'rotate(90deg)', transformOrigin: 'center center' }}>
+        {barcodeSvg}
+      </div>
+    );
+  }
+
+  return barcodeSvg;
 }
