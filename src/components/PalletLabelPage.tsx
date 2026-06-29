@@ -123,48 +123,42 @@ export function PalletLabelPage() {
             </div>
           </div>
 
-          {/* Label Demo Preview — actual portrait orientation, scaled */}
+          {/* Label Demo Preview — ngang để dễ xem */}
           <div className="mb-6">
             <div className="flex items-center gap-1.5 mb-2">
               <Eye className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-xs text-gray-500 font-medium">Demo tem</span>
-              <span className="text-[10px] text-gray-400">— 22×95mm (dọc)</span>
+              <span className="text-[10px] text-gray-400">— 22×95mm (in dọc, xem ngang)</span>
             </div>
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-4 flex justify-center">
-              {/* Actual label: 22mm × 95mm portrait → scaled × 2 */}
               <div
-                className="bg-white flex flex-col items-center"
+                className="bg-white flex flex-col items-center justify-center"
                 style={{
-                  width: '44mm',    // 22mm × 2
-                  height: '190mm',  // 95mm × 2
+                  width: '280px',
                   border: 'none',
                   padding: 0,
                 }}
               >
-                {/* Barcode rotated 90° — bars ngang, sát mép trên, full 22mm width */}
-                <div className="flex items-start justify-center w-full overflow-hidden" style={{ height: '168mm' }}>
+                {/* Barcode — ngang, full width, sát mép */}
+                <div className="w-full flex items-center justify-center overflow-hidden" style={{ height: '40px' }}>
                   <Barcode
                     value={firstCode}
                     format="CODE128"
-                    height={42}
+                    height={36}
                     width={1.4}
                     displayValue={false}
                     margin={0}
-                    rotate={true}
                   />
                 </div>
-                {/* Code text — dọc, sát dưới barcode, Arial 10pt */}
+                {/* Mã — dưới barcode, căn giữa, Arial 10pt */}
                 <div
-                  className="flex items-center justify-center"
                   style={{
                     fontFamily: 'Arial, sans-serif',
                     fontSize: '10pt',
                     fontWeight: 400,
                     color: '#000',
                     whiteSpace: 'nowrap',
-                    height: '22mm',
-                    writingMode: 'vertical-rl',
-                    textOrientation: 'mixed',
+                    marginTop: '2px',
                   }}
                 >
                   {firstCode}
