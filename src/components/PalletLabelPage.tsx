@@ -133,7 +133,7 @@ export function PalletLabelPage() {
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-3 flex justify-center">
               {/* Label shown horizontally: 95mm × 22mm → scaled × 3 */}
               <div
-                className="bg-white flex items-center gap-2"
+                className="bg-white flex flex-col items-center justify-center"
                 style={{
                   width: '285px',   // 95mm × 3
                   height: '66px',   // 22mm × 3
@@ -141,27 +141,27 @@ export function PalletLabelPage() {
                   padding: 0,
                 }}
               >
-                {/* Barcode — standard horizontal, bars vertical */}
-                <div className="flex-1 flex items-center justify-center overflow-hidden h-full">
+                {/* Barcode — top, fills most of width */}
+                <div className="w-full flex items-center justify-center overflow-hidden" style={{ height: '50px' }}>
                   <Barcode
                     value={firstCode}
                     format="CODE128"
-                    height={60}
+                    height={46}
                     width={1.8}
                     displayValue={false}
                     margin={8}
                   />
                 </div>
-                {/* Code text — horizontal, Arial 7pt */}
+                {/* Code text — below barcode, Arial 7pt */}
                 <div
-                  className="flex items-center justify-center pr-1"
+                  className="flex items-center justify-center"
                   style={{
                     fontFamily: 'Arial, sans-serif',
                     fontSize: '7pt',
                     fontWeight: 400,
                     color: '#000',
                     whiteSpace: 'nowrap',
-                    minWidth: '80px',
+                    height: '16px',
                   }}
                 >
                   {firstCode}
