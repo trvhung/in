@@ -133,7 +133,7 @@ export function PalletLabelPage() {
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-4 flex justify-center">
               {/* Actual label: 22mm × 95mm portrait → scaled × 2 */}
               <div
-                className="bg-white flex flex-col items-center justify-between"
+                className="bg-white flex flex-col items-center"
                 style={{
                   width: '44mm',    // 22mm × 2
                   height: '190mm',  // 95mm × 2
@@ -141,28 +141,28 @@ export function PalletLabelPage() {
                   padding: 0,
                 }}
               >
-                {/* Barcode rotated 90° — bars run horizontally across 22mm width */}
-                <div className="flex-1 flex items-center justify-center w-full overflow-hidden">
+                {/* Barcode rotated 90° — bars ngang, sát mép trên, full 22mm width */}
+                <div className="flex items-start justify-center w-full overflow-hidden" style={{ height: '168mm' }}>
                   <Barcode
                     value={firstCode}
                     format="CODE128"
                     height={42}
                     width={1.4}
                     displayValue={false}
-                    margin={8}
+                    margin={0}
                     rotate={true}
                   />
                 </div>
-                {/* Code text — rotated 90°, displayed vertically */}
+                {/* Code text — dọc, sát dưới barcode, Arial 10pt */}
                 <div
                   className="flex items-center justify-center"
                   style={{
                     fontFamily: 'Arial, sans-serif',
-                    fontSize: '7pt',
+                    fontSize: '10pt',
                     fontWeight: 400,
                     color: '#000',
                     whiteSpace: 'nowrap',
-                    height: '16mm',
+                    height: '22mm',
                     writingMode: 'vertical-rl',
                     textOrientation: 'mixed',
                   }}
