@@ -36,20 +36,20 @@ function renderBarcodeDataURL(code: string, wPx: number, hPx: number): string {
 // ── A3 landscape ──
 const PAGE_W = 420;
 const PAGE_H = 297;
-const MARGIN = 5;
+const MARGIN = 2;
 
 // ── Grid: 4 columns × 10 rows = 40 labels ──
 const COLS = 4;
 const ROWS = 10;
-const CELL_W = 102.5;
-const CELL_H = 28.7;
+const CELL_W = 104;
+const CELL_H = 29.3;
 const LABELS_PER_PAGE = COLS * ROWS;
-// 4×102.5 = 410 + 2×5 = 420 ✓ | 10×28.7 = 287 + 2×5 = 297 ✓
+// 4×104 = 416 + 2×2 = 420 ✓ | 10×29.3 = 293 + 2×2 = 297 ✓
 
 // ── Cell content ──
 const PADDING = 1.5;
-const CW = CELL_W - 2 * PADDING;   // 99.5mm
-const CH = CELL_H - 2 * PADDING;   // 25.7mm
+const CW = CELL_W - 2 * PADDING;   // 101mm
+const CH = CELL_H - 2 * PADDING;   // 26.3mm
 
 // ── Barcode (horizontal, fills content width) ──
 const BC_W = CW;       // mm — full content width
@@ -57,9 +57,9 @@ const BC_H_MM = 17;    // mm
 const BC_H_PX = 64;    // px — barcode image height
 
 // ── Text below barcode ──
-const TEXT_H_MM = 6;   // mm (14pt bold)
-const GAP = 1;         // mm
-// Total: 17 + 1 + 6 = 24mm (fits 25.7mm)
+const TEXT_H_MM = 7;   // mm (14pt bold)
+const GAP = 0.5;       // mm
+// Total: 17 + 0.5 + 7 = 24.5mm (fits 26.3mm)
 
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
