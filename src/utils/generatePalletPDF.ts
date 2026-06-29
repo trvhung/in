@@ -36,20 +36,20 @@ function renderBarcodeDataURL(code: string, wPx: number, hPx: number): string {
 // ── A3 landscape ──
 const PAGE_W = 420;
 const PAGE_H = 297;
-const MARGIN = 8;
+const MARGIN = 5;
 
 // ── Grid: 4 columns × 10 rows = 40 labels ──
 const COLS = 4;
 const ROWS = 10;
-const CELL_W = 101.0;
-const CELL_H = 28.1;
+const CELL_W = 102.5;
+const CELL_H = 28.7;
 const LABELS_PER_PAGE = COLS * ROWS;
-// 4×101 = 404 + 2×8 = 420 ✓ | 10×28.1 = 281 + 2×8 = 297 ✓
+// 4×102.5 = 410 + 2×5 = 420 ✓ | 10×28.7 = 287 + 2×5 = 297 ✓
 
 // ── Cell content ──
 const PADDING = 1.5;
-const CW = CELL_W - 2 * PADDING;   // 98.0mm
-const CH = CELL_H - 2 * PADDING;   // 25.1mm
+const CW = CELL_W - 2 * PADDING;   // 99.5mm
+const CH = CELL_H - 2 * PADDING;   // 25.7mm
 
 // ── Barcode (horizontal, fills content width) ──
 const BC_W = CW;       // mm — full content width
@@ -57,9 +57,9 @@ const BC_H_MM = 17;    // mm
 const BC_H_PX = 64;    // px — barcode image height
 
 // ── Text below barcode ──
-const TEXT_H_MM = 5;   // mm
+const TEXT_H_MM = 6;   // mm (14pt bold)
 const GAP = 1;         // mm
-// Total: 17 + 1 + 5 = 23mm (fits 25.1mm with 1mm top/bottom margin)
+// Total: 17 + 1 + 6 = 24mm (fits 25.7mm)
 
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
@@ -91,8 +91,8 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
 
       // Text — below barcode, centered, mono
       const textY = bcY + bcH + GAP;
-      doc.setFont('Courier', 'normal');
-      doc.setFontSize(10);
+      doc.setFont('Courier', 'bold');
+      doc.setFontSize(14);
       doc.text(code, cx + CW / 2, textY, { align: 'center', baseline: 'top' });
     }
   }

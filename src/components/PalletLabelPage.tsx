@@ -150,12 +150,12 @@ export function PalletLabelPage() {
                     margin={0}
                   />
                 </div>
-                {/* Mã — dưới barcode, căn giữa, mono 15pt */}
+                {/* Mã — dưới barcode, căn giữa, mono 14pt bold */}
                 <div
                   style={{
                     fontFamily: '"Courier New", Courier, monospace',
-                    fontSize: '15pt',
-                    fontWeight: 400,
+                    fontSize: '14pt',
+                    fontWeight: 700,
                     color: '#000',
                     whiteSpace: 'nowrap',
                     marginTop: '2px',
