@@ -128,32 +128,32 @@ export function PalletLabelPage() {
             <div className="flex items-center gap-1.5 mb-2">
               <Eye className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-xs text-gray-500 font-medium">Demo tem</span>
-              <span className="text-[10px] text-gray-400">— 22×95mm (in dọc, xem ngang)</span>
+              <span className="text-[10px] text-gray-400">— 28.1×101.0mm (in dọc, xem ngang)</span>
             </div>
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-4 flex justify-center">
               <div
                 className="bg-white flex flex-col items-center justify-center"
                 style={{
-                  width: '280px',
+                  width: '260px',
                   border: 'none',
                   padding: 0,
                 }}
               >
-                {/* Barcode — ngang, full width, sát mép */}
-                <div className="w-full flex items-center justify-center overflow-hidden" style={{ height: '40px' }}>
+                {/* Barcode — ngang, sát mép */}
+                <div className="w-full flex items-center justify-center overflow-hidden" style={{ height: '44px' }}>
                   <Barcode
                     value={firstCode}
                     format="CODE128"
-                    height={36}
-                    width={1.4}
+                    height={40}
+                    width={1.3}
                     displayValue={false}
                     margin={0}
                   />
                 </div>
-                {/* Mã — dưới barcode, căn giữa, Arial 10pt */}
+                {/* Mã — dưới barcode, căn giữa, mono 10pt */}
                 <div
                   style={{
-                    fontFamily: 'Arial, sans-serif',
+                    fontFamily: '"Courier New", Courier, monospace',
                     fontSize: '10pt',
                     fontWeight: 400,
                     color: '#000',
