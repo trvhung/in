@@ -102,9 +102,10 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   return doc.output('blob');
 }
 
-/** Generate Excel file with pallet code list */
+/** Generate Excel file with unique pallet codes (no duplicates) */
 function generateExcel(codes: string[]): Blob {
-  const data = codes.map((code, i) => ({
+  const unique = [...new Set(codes)];
+  const data = unique.map((code, i) => ({
     STT: i + 1,
     'Mã Pallet': code,
   }));
