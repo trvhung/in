@@ -82,22 +82,24 @@ Layout đơn giản, centered:
 ### 5.2 Nội dung mỗi tem (22mm × 95mm, xoay dọc)
 
 ```
-┌──────────────────────┐
-│                      │
-│   BARCODE CODE128    │  ← Barcode xoay dọc 90°
-│   (thanh mã nằm      │     (CSS transform: rotate(90deg))
-│    ngang, xoay 90°)  │
-│                      │
-│   PLT-0925-00001     │  ← Mã hiển thị dọc, cùng chiều barcode
-│                      │     Font: Arial 7pt
-└──────────────────────┘
+┌────────────────────┐
+│████████████████████│
+│████ BARCODE ██████│  ← Barcode Code128 xoay dọc 90°
+│████ CODE128 ██████│     không lề, sát mép tem
+│████████████████████│
+│████████████████████│
+│                    │
+│  PLT-0925-00001    │  ← Mã hiển thị dọc, cùng chiều barcode
+│                    │     Font: Arial 7pt, không lề trong
+└────────────────────┘
   ←── 22mm ──→
 ```
 
 **Chi tiết:**
-- **Barcode**: Code128, render bằng JsBarcode, xoay 90° bằng CSS `transform: rotate(90deg)`
+- **Barcode**: Code128, render bằng JsBarcode (margin: 0), xoay 90° bằng CSS `transform: rotate(90deg)`
 - **Mã PLT**: hiển thị dọc (rotate 90°), font Arial 7pt, nằm cạnh hoặc dưới barcode
 - **Không viền** (no border)
+- **Không lề bên trong tem** (no padding/margin inside label)
 - **Không có text dưới barcode** (displayValue: false)
 
 ### 5.3 Phân trang
