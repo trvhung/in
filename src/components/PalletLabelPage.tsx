@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, Eye } from 'lucide-react';
 import { PalletConfig } from '../types';
 import { generatePalletPDF } from '../utils/generatePalletPDF';
+import { Barcode } from './Barcode';
 
 const MAX_QUANTITY = 10000;
 
@@ -112,7 +113,7 @@ export function PalletLabelPage() {
           </div>
 
           {/* Code preview */}
-          <div className="mb-6 p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
+          <div className="mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
             <div className="text-xs text-gray-500 mb-1">Mã tem sẽ tạo:</div>
             <div className="text-sm font-mono font-bold text-gray-800">
               {firstCode} → {lastCode}
@@ -120,6 +121,56 @@ export function PalletLabelPage() {
             <div className="text-xs text-gray-400 mt-1">
               {uniqueCount} mã duy nhất × 2 = {config.quantity} tem / {totalPages} tờ A3
             </div>
+          </div>
+
+          {/* Label Demo Preview — horizontal orientation (rotated 90° from actual print) */}
+          <div className="mb-6">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Eye className="w-3.5 h-3.5 text-gray-400" />
+              <span className="text-xs text-gray-500 font-medium">Demo tem (ngang)</span>
+              <span className="text-[10px] text-gray-400">— 22×95mm</span>
+            </div>
+            <div className="bg-white border border-dashed border-gray-300 rounded-lg p-3 flex justify-center">
+              {/* Label shown horizontally: 95mm × 22mm → scaled × 3 */}
+              <div
+                className="bg-white flex items-center gap-2"
+                style={{
+                  width: '285px',   // 95mm × 3
+                  height: '66px',   // 22mm × 3
+                  border: 'none',
+                  padding: 0,
+                }}
+              >
+                {/* Barcode — standard horizontal, bars vertical */}
+                <div className="flex-1 flex items-center justify-center overflow-hidden h-full">
+                  <Barcode
+                    value={firstCode}
+                    format="CODE128"
+                    height={60}
+                    width={1.8}
+                    displayValue={false}
+                    margin={8}
+                  />
+                </div>
+                {/* Code text — horizontal, Arial 7pt */}
+                <div
+                  className="flex items-center justify-center pr-1"
+                  style={{
+                    fontFamily: 'Arial, sans-serif',
+                    fontSize: '7pt',
+                    fontWeight: 400,
+                    color: '#000',
+                    whiteSpace: 'nowrap',
+                    minWidth: '80px',
+                  }}
+                >
+                  {firstCode}
+                </div>
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1.5 text-center">
+              Tem thực tế xoay dọc 90°. Trên đây là góc nhìn ngang để dễ đọc.
+            </p>
           </div>
 
           {/* Download PDF button */}
