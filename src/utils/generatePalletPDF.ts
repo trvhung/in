@@ -80,15 +80,15 @@ const CONTENT_H = CELL_H - 2 * PADDING; // 98.0mm
 
 // ── Barcode within content ──
 const BARCODE_W = 21;   // mm — width in content (quiets ~2mm each side)
-const BARCODE_H = 75;   // mm — height in content
+const BARCODE_H = 70;   // mm
 
 // ── Text (15pt, +50%) ──
-const TEXT_H = 21;      // mm
-const GAP_BC_TEXT = 2;  // mm
+const TEXT_H = 25;      // mm — enough for 15pt mono when rotated
+const GAP_BC_TEXT = 3;  // mm
 
-// ── Content vertical layout: barcode → gap → text ──
-const CONTENT_TOTAL = BARCODE_H + GAP_BC_TEXT + TEXT_H; // 75+2+21=98mm
-const CONTENT_TOP_OFFSET = (CONTENT_H - CONTENT_TOTAL) / 2; // 0mm (exact fit)
+// ── Content layout: barcode (top) → gap → text (bottom, centered) ──
+const CONTENT_TOTAL = BARCODE_H + GAP_BC_TEXT + TEXT_H; // 70+3+25=98mm
+const CONTENT_TOP_OFFSET = (CONTENT_H - CONTENT_TOTAL) / 2; // 0mm
 
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
@@ -130,9 +130,9 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
 
       doc.addImage(barcodeDataURL, 'PNG', bcX, bcY, BARCODE_W, BARCODE_H, undefined, 'FAST');
 
-      // Text: below barcode, centered, rotated 90° (vertical)
+      // Text: below barcode, centered in text zone, rotated 90°
       const textX = contentX + CONTENT_W / 2;
-      const textY = bcY + BARCODE_H + GAP_BC_TEXT;
+      const textY = bcY + BARCODE_H + GAP_BC_TEXT + TEXT_H / 2; // center of text zone
 
       doc.setFont('Courier', 'normal');
       doc.setFontSize(15);
@@ -140,7 +140,7 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
       doc.text(code, textX, textY, {
         angle: 90,
         align: 'center',
-        baseline: 'top',
+        baseline: 'middle',
       });
     }
   }
