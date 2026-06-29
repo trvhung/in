@@ -21,26 +21,49 @@ function generateCodes(config: PalletConfig): string[] {
 }
 
 /**
- * Render Code128 barcode to data URL.
- * Barcode is drawn horizontally (bars vertical) by JsBarcode.
- * In the PDF, it gets rotated 90° so bars become horizontal,
- * filling the 22mm label width, extending ~75mm down the 95mm label height.
+ * Render Code128 barcode to a PRE-ROTATED data URL.
  *
- * JsBarcode `height` → after 90° rotation → barcode width in label (~20mm)
- * Total barcode pixel width → after 90° rotation → barcode height in label (~75mm)
+ * Step 1: JsBarcode draws on a temp canvas (bars VERTICAL).
+ *   - width: ~284px (189 modules × 1.5px)
+ *   - height: 76px (bar length → after rotation this is the barcode WIDTH in label ≈ 20mm)
+ *
+ * Step 2: Content is rotated 90° onto output canvas.
+ *   - output: 76px wide × ~284px tall
+ *   - bars are now HORIZONTAL
+ *
+ * Step 3: In PDF, placed at (x, y) with size (20mm, 75mm) — NO rotation needed.
+ *   - This avoids jsPDF addImage rotation which rotates around center
+ *     and causes the image to spill outside the label bounding box.
  */
 function renderBarcodeDataURL(code: string): string {
-  const canvas = document.createElement('canvas');
-  JsBarcode(canvas, code, {
+  // Step 1: JsBarcode → temp canvas (bars vertical)
+  const temp = document.createElement('canvas');
+  JsBarcode(temp, code, {
     format: 'CODE128',
-    width: 1.5,        // module width → ~75mm after rotation
-    height: 72,        // ~20mm after rotation (fits 22mm label with 1mm each side)
-    margin: 0,         // no quiet zone margin
+    width: 1.5,
+    height: 76,
+    margin: 0,
     displayValue: false,
     background: '#FFFFFF',
     lineColor: '#000000',
   });
-  return canvas.toDataURL('image/png');
+  // temp is now: temp.width × temp.height = ~284px × 76px, bars VERTICAL
+
+  // Step 2: Rotate 90° onto output canvas → bars become HORIZONTAL
+  const out = document.createElement('canvas');
+  out.width = temp.height;   // 76px → ~20mm width in label
+  out.height = temp.width;   // ~284px → ~75mm height in label
+
+  const ctx = out.getContext('2d')!;
+  // Fill white background
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, out.width, out.height);
+  // Rotate 90° clockwise around center of output
+  ctx.translate(out.width / 2, out.height / 2);
+  ctx.rotate(Math.PI / 2);
+  ctx.drawImage(temp, -temp.width / 2, -temp.height / 2);
+
+  return out.toDataURL('image/png');
 }
 
 // A3 portrait page (mm)
@@ -107,7 +130,7 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
       const barcodeX = labelX + (LABEL_W - BARCODE_W) / 2; // center in 22mm width
       const barcodeY = contentTop;
 
-      // Add barcode image rotated 90° — bars become horizontal
+      // Add pre-rotated barcode image (bars already horizontal, no PDF rotation needed)
       doc.addImage(
         barcodeDataURL,
         'PNG',
@@ -116,8 +139,7 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
         BARCODE_W,
         BARCODE_H,
         undefined,
-        'FAST',
-        90
+        'FAST'
       );
 
       // Text position: below barcode, centered
