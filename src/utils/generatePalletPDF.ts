@@ -71,17 +71,19 @@ const MARGIN = 8;
 // ── Grid ──
 const COLS = 10;
 const ROWS = 4;
-const CELL_W = 28.1;
+const CELL_W = 27.3;
 const CELL_H = 101.0;
+const PAIR_GAP = 2;    // gap between code pairs (after every 2 columns)
 const LABELS_PER_PAGE = COLS * ROWS;
+// 10×27.3 + 4×2 + 2×8 = 297 ✓
 
 // ── Cell content ──
 const PADDING = 1.5;
-const CW = CELL_W - 2 * PADDING;  // 25.1mm
+const CW = CELL_W - 2 * PADDING;  // 24.3mm
 const CH = CELL_H - 2 * PADDING;  // 98.0mm
 
-// ── Barcode (pre-rotated, bars horizontal, fills CW) ──
-const BC_W = 21;   // mm
+// ── Barcode (pre-rotated, bars horizontal) ──
+const BC_W = 19;   // mm (fits 24.3mm content with ~2.6mm quiet each side)
 const BC_H = 70;   // mm
 
 // ── Text below barcode ──
@@ -102,7 +104,9 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
     for (let i = 0; i < pageCodes.length; i++) {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
-      const cellX = MARGIN + col * CELL_W;
+      // X position: add pair gap after every 2 columns
+      const pairIndex = Math.floor(col / 2);
+      const cellX = MARGIN + col * CELL_W + pairIndex * PAIR_GAP;
       const cellY = MARGIN + row * CELL_H;
       const cx = cellX + PADDING;
       const cy = cellY + PADDING;

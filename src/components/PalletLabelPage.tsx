@@ -128,7 +128,7 @@ export function PalletLabelPage() {
             <div className="flex items-center gap-1.5 mb-2">
               <Eye className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-xs text-gray-500 font-medium">Demo tem</span>
-              <span className="text-[10px] text-gray-400">— 28.1×101.0mm (in dọc, xem ngang)</span>
+              <span className="text-[10px] text-gray-400">— 27.3×101.0mm (in dọc, xem ngang, gap 2mm giữa cặp mã)</span>
             </div>
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-4 flex justify-center">
               <div
