@@ -63,10 +63,16 @@ const TEXT_H_MM = 7;   // mm (14pt bold)
 const GAP = 0.5;       // mm
 // Total: 17 + 0.5 + 7 = 24.5mm (fits 26.3mm)
 
+function delay(ms: number): Promise<void> {
+  return new Promise(r => setTimeout(r, ms));
+}
+
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
   const totalPages = Math.ceil(codes.length / LABELS_PER_PAGE);
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [PAGE_W, PAGE_H] });
+  const barcodeCache = new Map<string, string>(); // cache rendered barcodes
+  const bcPxW = Math.round(BC_W * 3.78);
 
   for (let page = 0; page < totalPages; page++) {
     if (page > 0) doc.addPage();
@@ -82,20 +88,27 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
 
       const code = pageCodes[i];
 
-      // Barcode — horizontal, bars vertical, fills content width
-      const bcW = BC_W;
-      const bcH = BC_H_MM;
+      // Barcode — cached per unique code
+      let dataURL = barcodeCache.get(code);
+      if (!dataURL) {
+        dataURL = renderBarcodeDataURL(code, bcPxW, BC_H_PX);
+        barcodeCache.set(code, dataURL);
+      }
+
       const bcX = cx;
-      const bcY = cy + (CH - BC_H_MM - GAP - TEXT_H_MM) / 2; // center vertically
-      const bcPxW = Math.round(bcW * 3.78);
-      const dataURL = renderBarcodeDataURL(code, bcPxW, BC_H_PX);
-      doc.addImage(dataURL, 'PNG', bcX, bcY, bcW, bcH, undefined, 'FAST');
+      const bcY = cy + (CH - BC_H_MM - GAP - TEXT_H_MM) / 2;
+      doc.addImage(dataURL, 'PNG', bcX, bcY, BC_W, BC_H_MM, undefined, 'FAST');
 
       // Text — below barcode, centered, mono
-      const textY = bcY + bcH + GAP;
+      const textY = bcY + BC_H_MM + GAP;
       doc.setFont('Courier', 'bold');
       doc.setFontSize(14);
       doc.text(code, cx + CW / 2, textY, { align: 'center', baseline: 'top' });
+    }
+
+    // Yield to event loop every page to keep UI responsive
+    if (page % 2 === 0) {
+      await delay(0);
     }
   }
 
