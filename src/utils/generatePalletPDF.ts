@@ -63,9 +63,9 @@ function renderBarcodeDataURL(code: string, wMM: number, hMM: number): string {
   return out.toDataURL('image/png');
 }
 
-// ── Page ──
-const PAGE_W = 297;
-const PAGE_H = 420;
+// ── Page: A3 landscape ──
+const PAGE_W = 420;
+const PAGE_H = 297;
 const MARGIN = 8;
 
 // ── Grid ──
