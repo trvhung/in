@@ -16,81 +16,50 @@ function generateCodes(config: PalletConfig): string[] {
   return codes;
 }
 
-// 1mm = 96/25.4 px
-const PX_PER_MM = 96 / 25.4; // ~3.7795
-
-/**
- * Render barcode → pre-rotated 90° canvas.
- * Output: bars HORIZONTAL, image sized for direct PDF placement.
- */
-function renderBarcodeDataURL(code: string, wMM: number, hMM: number): string {
-  const wPx = Math.round(wMM * PX_PER_MM);  // target width after rotation
-  const hPx = Math.round(hMM * PX_PER_MM);  // target height after rotation
-
-  // Step 1: JsBarcode (bars VERTICAL) on temp canvas
-  //   After 90° rotation: temp.width→height, temp.height→width
-  //   We need: rotated.width=wPx, rotated.height=hPx
-  //   So: temp.height=wPx, temp.width=hPx
-  const temp = document.createElement('canvas');
-  temp.width = hPx;
-  temp.height = wPx;
-
-  JsBarcode(temp, code, {
+/** Render barcode to data URL (normal horizontal, bars vertical) */
+function renderBarcodeDataURL(code: string, wPx: number, hPx: number): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = wPx;
+  canvas.height = hPx;
+  JsBarcode(canvas, code, {
     format: 'CODE128',
     width: 1,
-    height: wPx - 2,
-    margin: 1,
+    height: hPx - 4,
+    margin: 2,
     displayValue: false,
     background: '#FFFFFF',
     lineColor: '#000000',
   });
-  // temp: hPx × wPx, bars vertical, white background
-
-  // Step 2: Rotate 90° onto output canvas → bars HORIZONTAL
-  const out = document.createElement('canvas');
-  out.width = wPx;
-  out.height = hPx;
-
-  const ctx = out.getContext('2d')!;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(0, 0, out.width, out.height);
-  ctx.save();
-  ctx.translate(out.width / 2, out.height / 2);
-  ctx.rotate(Math.PI / 2);
-  ctx.drawImage(temp, -temp.width / 2, -temp.height / 2);
-  ctx.restore();
-
-  return out.toDataURL('image/png');
+  return canvas.toDataURL('image/png');
 }
 
-// ── Page: A3 landscape ──
+// ── A3 landscape ──
 const PAGE_W = 420;
 const PAGE_H = 297;
 const MARGIN = 8;
 
-// ── Grid ──
-const COLS = 10;
-const ROWS = 4;
-const CELL_W = 27.3;
-const CELL_H = 101.0;
-const PAIR_GAP = 2;    // gap between code pairs (after every 2 columns)
+// ── Grid: 4 columns × 10 rows = 40 labels ──
+const COLS = 4;
+const ROWS = 10;
+const CELL_W = 101.0;
+const CELL_H = 28.1;
 const LABELS_PER_PAGE = COLS * ROWS;
-// 10×27.3 + 4×2 + 2×8 = 297 ✓
+// 4×101 = 404 + 2×8 = 420 ✓ | 10×28.1 = 281 + 2×8 = 297 ✓
 
 // ── Cell content ──
 const PADDING = 1.5;
-const CW = CELL_W - 2 * PADDING;  // 24.3mm
-const CH = CELL_H - 2 * PADDING;  // 98.0mm
+const CW = CELL_W - 2 * PADDING;   // 98.0mm
+const CH = CELL_H - 2 * PADDING;   // 25.1mm
 
-// ── Barcode (pre-rotated, bars horizontal) ──
-const BC_W = 19;   // mm (fits 24.3mm content with ~2.6mm quiet each side)
-const BC_H = 70;   // mm
+// ── Barcode (horizontal, fills content width) ──
+const BC_W = CW;       // mm — full content width
+const BC_H_MM = 17;    // mm
+const BC_H_PX = 64;    // px — barcode image height
 
 // ── Text below barcode ──
-const TEXT_H = 25;  // mm (fits 15pt mono rotated)
-const GAP = 3;      // mm
-
-// Total = 70+3+25 = 98mm = CH ✓
+const TEXT_H_MM = 5;   // mm
+const GAP = 1;         // mm
+// Total: 17 + 1 + 5 = 23mm (fits 25.1mm with 1mm top/bottom margin)
 
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
@@ -104,35 +73,27 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
     for (let i = 0; i < pageCodes.length; i++) {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
-      // X position: add pair gap after every 2 columns
-      const pairIndex = Math.floor(col / 2);
-      const cellX = MARGIN + col * CELL_W + pairIndex * PAIR_GAP;
+      const cellX = MARGIN + col * CELL_W;
       const cellY = MARGIN + row * CELL_H;
       const cx = cellX + PADDING;
       const cy = cellY + PADDING;
 
       const code = pageCodes[i];
 
-      // Barcode image (pre-rotated: bars horizontal)
-      const dataURL = renderBarcodeDataURL(code, BC_W, BC_H);
+      // Barcode — horizontal, bars vertical, fills content width
+      const bcW = BC_W;
+      const bcH = BC_H_MM;
+      const bcX = cx;
+      const bcY = cy + (CH - BC_H_MM - GAP - TEXT_H_MM) / 2; // center vertically
+      const bcPxW = Math.round(bcW * 3.78);
+      const dataURL = renderBarcodeDataURL(code, bcPxW, BC_H_PX);
+      doc.addImage(dataURL, 'PNG', bcX, bcY, bcW, bcH, undefined, 'FAST');
 
-      // Position: centered horizontally, top of content area
-      const bcX = cx + (CW - BC_W) / 2;
-      const bcY = cy;
-
-      doc.addImage(dataURL, 'PNG', bcX, bcY, BC_W, BC_H, undefined, 'FAST');
-
-      // Text: centered in text zone below barcode
-      const textX = cx + CW / 2;
-      const textY = bcY + BC_H + GAP + TEXT_H / 2;
-
+      // Text — below barcode, centered, mono
+      const textY = bcY + bcH + GAP;
       doc.setFont('Courier', 'normal');
-      doc.setFontSize(15);
-      doc.text(code, textX, textY, {
-        angle: 90,
-        align: 'center',
-        baseline: 'middle',
-      });
+      doc.setFontSize(10);
+      doc.text(code, cx + CW / 2, textY, { align: 'center', baseline: 'top' });
     }
   }
 
