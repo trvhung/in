@@ -25,3 +25,9 @@ export interface LabelTemplate {
   showBarcode?: boolean;
   bgColor?: string; // màu nền cho sale template
 }
+
+export interface PalletConfig {
+  month: number;    // 1-12
+  year: number;     // e.g. 2025
+  quantity: number; // số lượng tem pallet
+}
