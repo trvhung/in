@@ -1,11 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Loader2, Eye } from 'lucide-react';
 import { PalletConfig } from '../types';
-import { generatePalletPDF } from '../utils/generatePalletPDF';
+import { downloadPalletZip } from '../utils/generatePalletPDF';
 import { Barcode } from './Barcode';
-
-const MAX_QUANTITY = 10000;
 
 export function PalletLabelPage() {
   const navigate = useNavigate();
@@ -24,21 +22,13 @@ export function PalletLabelPage() {
   const firstCode = `PLT-${mm}${yy}-${String(1).padStart(5, '0')}`;
   const lastCode = `PLT-${mm}${yy}-${String(uniqueCount).padStart(5, '0')}`;
 
-  const handleDownloadPDF = async () => {
+  const handleDownload = async () => {
     setIsGenerating(true);
     try {
-      const blob = await generatePalletPDF(config);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pallet-${mm}${yy}-${String(uniqueCount).padStart(5, '0')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await downloadPalletZip(config);
     } catch (err) {
-      console.error('PDF generation failed:', err);
-      alert('Có lỗi khi tạo PDF. Vui lòng thử lại.');
+      console.error('Download failed:', err);
+      alert('Có lỗi khi tạo file. Vui lòng thử lại.');
     } finally {
       setIsGenerating(false);
     }
@@ -97,15 +87,14 @@ export function PalletLabelPage() {
           {/* Quantity */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              Số lượng tem <span className="text-gray-400 font-normal">(tối đa {MAX_QUANTITY.toLocaleString('vi-VN')})</span>
+              Số lượng tem
             </label>
             <input
               type="number"
               min={1}
-              max={MAX_QUANTITY}
               value={config.quantity}
               onChange={(e) => {
-                const v = Math.max(1, Math.min(MAX_QUANTITY, parseInt(e.target.value) || 1));
+                const v = Math.max(1, parseInt(e.target.value) || 1);
                 setConfig({ ...config, quantity: v });
               }}
               className="w-full bg-white border border-gray-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -168,9 +157,9 @@ export function PalletLabelPage() {
             </div>
           </div>
 
-          {/* Download PDF button */}
+          {/* Download button */}
           <button
-            onClick={handleDownloadPDF}
+            onClick={handleDownload}
             disabled={isGenerating}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer ${
               isGenerating
@@ -181,21 +170,15 @@ export function PalletLabelPage() {
             {isGenerating ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Đang tạo PDF...
+                Đang tạo file...
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                Tải PDF ({config.quantity} tem)
+                Tải về ({config.quantity} tem)
               </>
             )}
           </button>
-
-          {config.quantity >= 1000 && (
-            <p className="text-xs text-amber-600 mt-3 text-center">
-              ⚠️ Số lượng lớn, quá trình tạo PDF có thể mất vài giây.
-            </p>
-          )}
         </div>
       </div>
     </div>

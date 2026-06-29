@@ -1,5 +1,7 @@
 import { jsPDF } from 'jspdf';
 import JsBarcode from 'jsbarcode';
+import JSZip from 'jszip';
+import * as XLSX from 'xlsx';
 import { PalletConfig } from '../types';
 
 function generateCodes(config: PalletConfig): string[] {
@@ -98,4 +100,47 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   }
 
   return doc.output('blob');
+}
+
+/** Generate Excel file with pallet code list */
+function generateExcel(codes: string[]): Blob {
+  const data = codes.map((code, i) => ({
+    STT: i + 1,
+    'Mã Pallet': code,
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{ wch: 8 }, { wch: 20 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Danh sách mã Pallet');
+  const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+  return new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+/** Generate PDF + Excel, zip together, download */
+export async function downloadPalletZip(config: PalletConfig): Promise<void> {
+  const codes = generateCodes(config);
+  const mm = String(config.month).padStart(2, '0');
+  const yy = String(config.year).slice(-2);
+  const uniqueCount = Math.ceil(config.quantity / 2);
+  const prefix = `pallet-${mm}${yy}-${String(uniqueCount).padStart(5, '0')}`;
+
+  const [pdfBlob, xlsxBlob] = await Promise.all([
+    generatePalletPDF(config),
+    Promise.resolve(generateExcel(codes)),
+  ]);
+
+  const zip = new JSZip();
+  zip.file(`${prefix}.pdf`, pdfBlob);
+  zip.file(`${prefix}.xlsx`, xlsxBlob);
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${prefix}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
