@@ -80,15 +80,15 @@ const CONTENT_H = CELL_H - 2 * PADDING; // 98.0mm
 
 // ── Barcode within content ──
 const BARCODE_W = 21;   // mm — width in content (quiets ~2mm each side)
-const BARCODE_H = 80;   // mm — height in content
+const BARCODE_H = 75;   // mm — height in content
 
-// ── Text ──
-const TEXT_H = 14;      // mm
+// ── Text (15pt, +50%) ──
+const TEXT_H = 21;      // mm
 const GAP_BC_TEXT = 2;  // mm
 
-// ── Content vertical centering ──
-const CONTENT_TOTAL = BARCODE_H + GAP_BC_TEXT + TEXT_H; // 96mm
-const CONTENT_TOP_OFFSET = (CONTENT_H - CONTENT_TOTAL) / 2; // 1mm within content
+// ── Content vertical layout: barcode → gap → text ──
+const CONTENT_TOTAL = BARCODE_H + GAP_BC_TEXT + TEXT_H; // 75+2+21=98mm
+const CONTENT_TOP_OFFSET = (CONTENT_H - CONTENT_TOTAL) / 2; // 0mm (exact fit)
 
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
@@ -135,7 +135,7 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
       const textY = bcY + BARCODE_H + GAP_BC_TEXT;
 
       doc.setFont('Courier', 'normal');
-      doc.setFontSize(10);
+      doc.setFontSize(15);
 
       doc.text(code, textX, textY, {
         angle: 90,
