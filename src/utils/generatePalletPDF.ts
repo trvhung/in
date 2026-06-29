@@ -36,20 +36,20 @@ function renderBarcodeDataURL(code: string, wPx: number, hPx: number): string {
 // ── A3 landscape ──
 const PAGE_W = 420;
 const PAGE_H = 297;
-const MARGIN = 2;
+const MARGIN = 1;
 
 // ── Grid: 4 columns × 10 rows = 40 labels ──
 const COLS = 4;
 const ROWS = 10;
-const CELL_W = 104;
-const CELL_H = 29.3;
+const CELL_W = 104.5;
+const CELL_H = 29.5;
 const LABELS_PER_PAGE = COLS * ROWS;
-// 4×104 = 416 + 2×2 = 420 ✓ | 10×29.3 = 293 + 2×2 = 297 ✓
+// 4×104.5 = 418 + 2×1 = 420 ✓ | 10×29.5 = 295 + 2×1 = 297 ✓
 
 // ── Cell content ──
 const PADDING = 1.5;
-const CW = CELL_W - 2 * PADDING;   // 101mm
-const CH = CELL_H - 2 * PADDING;   // 26.3mm
+const CW = CELL_W - 2 * PADDING;   // 101.5mm
+const CH = CELL_H - 2 * PADDING;   // 26.5mm
 
 // ── Barcode (horizontal, fills content width) ──
 const BC_W = CW;       // mm — full content width
