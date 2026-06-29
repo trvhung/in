@@ -95,7 +95,7 @@ const GAP = 3;      // mm
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
   const totalPages = Math.ceil(codes.length / LABELS_PER_PAGE);
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [PAGE_W, PAGE_H] });
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [PAGE_W, PAGE_H] });
 
   for (let page = 0; page < totalPages; page++) {
     if (page > 0) doc.addPage();
