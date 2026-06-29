@@ -20,16 +20,22 @@ function generateCodes(config: PalletConfig): string[] {
   return codes;
 }
 
-/** Render a Code128 barcode to a data URL via off-screen canvas */
+/**
+ * Render Code128 barcode to data URL.
+ * Barcode is drawn horizontally (bars vertical) by JsBarcode.
+ * In the PDF, it gets rotated 90° so bars become horizontal,
+ * filling the 22mm label width, extending ~75mm down the 95mm label height.
+ *
+ * JsBarcode `height` → after 90° rotation → barcode width in label (~20mm)
+ * Total barcode pixel width → after 90° rotation → barcode height in label (~75mm)
+ */
 function renderBarcodeDataURL(code: string): string {
   const canvas = document.createElement('canvas');
-  // JsBarcode height = barcode width in label after 90° rotation (target: 15mm ≈ 57px)
-  // Module width: ~1.8 for ~74mm total barcode length after rotation
   JsBarcode(canvas, code, {
     format: 'CODE128',
-    width: 1.8,
-    height: 57,
-    margin: 8,       // ~2mm quiet zone each side
+    width: 1.5,        // module width → ~75mm after rotation
+    height: 72,        // ~20mm after rotation (fits 22mm label with 1mm each side)
+    margin: 0,         // no quiet zone margin
     displayValue: false,
     background: '#FFFFFF',
     lineColor: '#000000',
@@ -37,27 +43,31 @@ function renderBarcodeDataURL(code: string): string {
   return canvas.toDataURL('image/png');
 }
 
-// Page constants (mm)
+// A3 portrait page (mm)
 const PAGE_W = 297;
 const PAGE_H = 420;
+
+// Label size (mm) — portrait
 const LABEL_W = 22;
 const LABEL_H = 95;
+
+// Grid: 10 columns × 4 rows = 40 labels per page
 const COLS = 10;
 const ROWS = 4;
-const GAP = 0; // labels placed close together
-const LABELS_PER_PAGE = COLS * ROWS; // 40
+const GAP = 0;
+const LABELS_PER_PAGE = COLS * ROWS;
 
-// Offsets to center grid on page
+// Center grid on A3 page
 const gridW = COLS * LABEL_W + (COLS - 1) * GAP; // 220mm
 const gridH = ROWS * LABEL_H + (ROWS - 1) * GAP; // 380mm
 const offsetX = (PAGE_W - gridW) / 2; // 38.5mm
 const offsetY = (PAGE_H - gridH) / 2; // 20mm
 
-// Label internal layout (after 90° rotation)
-const BARCODE_W = 15;   // mm - barcode width in label
-const BARCODE_H = 73;   // mm - barcode height in label
-const TEXT_H = 16;      // mm - text height
-const BARCODE_TEXT_GAP = 1.5; // mm
+// Barcode dimensions within the 22×95mm label (after 90° rotation)
+const BARCODE_W = 20;  // mm — barcode width in label (fills 22mm with 1mm margin each side)
+const BARCODE_H = 75;  // mm — barcode height in label
+const TEXT_H = 14;     // mm — text area height
+const GAP_BC_TEXT = 2; // mm — gap between barcode and text
 
 export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
   const codes = generateCodes(config);
@@ -80,20 +90,24 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
 
+      // Label top-left position on page
       const labelX = offsetX + col * (LABEL_W + GAP);
       const labelY = offsetY + row * (LABEL_H + GAP);
 
       const code = pageCodes[i];
 
-      // Render barcode to image
+      // Render barcode to image (horizontal, bars vertical)
       const barcodeDataURL = renderBarcodeDataURL(code);
 
-      // Calculate barcode position within label (centered horizontally)
-      const barcodeX = labelX + (LABEL_W - BARCODE_W) / 2;
-      const barcodeY = labelY + (LABEL_H - BARCODE_H - BARCODE_TEXT_GAP - TEXT_H) / 2;
+      // Calculate barcode position within the portrait label.
+      // Barcode + gap + text are centered vertically in the 95mm label.
+      const contentH = BARCODE_H + GAP_BC_TEXT + TEXT_H; // 75 + 2 + 14 = 91mm
+      const contentTop = labelY + (LABEL_H - contentH) / 2; // center in 95mm
 
-      // Add rotated barcode image
-      // The image is horizontal; rotate 90° to make bars horizontal (scan vertically)
+      const barcodeX = labelX + (LABEL_W - BARCODE_W) / 2; // center in 22mm width
+      const barcodeY = contentTop;
+
+      // Add barcode image rotated 90° — bars become horizontal
       doc.addImage(
         barcodeDataURL,
         'PNG',
@@ -103,16 +117,17 @@ export async function generatePalletPDF(config: PalletConfig): Promise<Blob> {
         BARCODE_H,
         undefined,
         'FAST',
-        90 // rotation in degrees
+        90
       );
 
-      // Add rotated text below barcode
-      const textY = barcodeY + BARCODE_H + BARCODE_TEXT_GAP;
+      // Text position: below barcode, centered
       const textX = labelX + LABEL_W / 2;
+      const textY = barcodeY + BARCODE_H + GAP_BC_TEXT;
 
       doc.setFont('Arial', 'normal');
-      doc.setFontSize(7);
+      doc.setFontSize(10);
 
+      // Text rotated 90° (vertical), same orientation as barcode
       doc.text(code, textX, textY, {
         angle: 90,
         align: 'center',
