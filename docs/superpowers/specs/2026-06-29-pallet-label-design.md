@@ -11,15 +11,28 @@ Thêm tính năng "Tạo tem pallet" vào ứng dụng in tem mã vạch Elmich.
 
 ## 2. Điều hướng (Routing)
 
-State-based routing trong `App.tsx` với 3 màn hình:
+Sử dụng `react-router-dom` với URL-based routing:
 
-| State | Màn hình | Mô tả |
-|-------|----------|-------|
-| `home` | Trang chủ | 2 nút lớn: "Tạo tem giá" và "Tạo tem pallet" |
-| `price-label` | Tem giá | Giao diện hiện tại (ProductList + PrintPreview) |
-| `pallet-label` | Tem pallet | Form nhập liệu + trang in |
+| URL | Màn hình | Mô tả |
+|-----|----------|-------|
+| `/` | Trang chủ | 2 nút lớn: "Tạo tem giá" và "Tạo tem pallet" |
+| `/gia` | Tem giá | Giao diện hiện tại (ProductList + PrintPreview) |
+| `/pallet` | Tem pallet | Form nhập liệu + trang in |
 
-Mỗi màn hình con có nút "← Quay lại" để về Home.
+Các trang con có nút "← Quay lại" để về Home (`/`).
+
+### Cấu hình Vercel
+
+Thêm catch-all rewrite vào `vercel.json` để hỗ trợ client-side routing:
+
+```json
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/((?!api).*)", "destination": "/index.html" }
+  ]
+}
+```
 
 ## 3. Trang chủ (Home)
 
@@ -129,9 +142,11 @@ Layout đơn giản, centered:
 
 | File | Thay đổi |
 |------|----------|
-| `src/App.tsx` | Thêm state-based routing (home / price-label / pallet-label) |
-| `src/types.ts` | Thêm type `PalletConfig` nếu cần |
+| `src/App.tsx` | Thêm `<BrowserRouter>` và các `<Routes>` |
+| `src/types.ts` | Thêm type `PalletConfig` |
 | `src/components/Barcode.tsx` | Thêm prop `rotate?: boolean` để hỗ trợ xoay 90° |
+| `vercel.json` | Thêm catch-all rewrite cho client-side routing |
+| `package.json` | Thêm dependency `react-router-dom` |
 
 ## 7. Types bổ sung
 
@@ -152,13 +167,14 @@ export interface PalletCode {
 ## 8. Luồng người dùng
 
 ```
-Home → Click "Tạo tem pallet"
-  → Form: chọn tháng, năm, số lượng
-  → Click "Xem trước & In"
-  → Xem trang in (grid 10×4)
-  → Ctrl+P hoặc nút In
-  → In ra giấy A3
-  → "← Quay lại" để về Home
+/ → Click "Tạo tem giá" → /gia → app tem giá hiện tại
+  → Click "Tạo tem pallet" → /pallet
+    → Form: chọn tháng, năm, số lượng
+    → Click "Xem trước & In"
+    → Xem trang in (grid 10×4)
+    → Ctrl+P hoặc nút In
+    → In ra giấy A3
+    → "← Quay lại" → /
 ```
 
 ---
@@ -169,4 +185,5 @@ Home → Click "Tạo tem pallet"
 - ✅ Tính toán layout khớp với A3: 256mm × 392mm nằm gọn trong 297mm × 420mm
 - ✅ Logic sinh mã rõ ràng: ceil(N/2) mã, mỗi mã ×2 (mã cuối ×1 nếu lẻ)
 - ✅ Tái sử dụng component Barcode hiện có
-- ✅ Không thay đổi router/framework, giữ nguyên stack React + Vite + TailwindCSS
+- ✅ Thêm `react-router-dom` cho URL-based routing (`/`, `/gia`, `/pallet`)
+- ✅ Cấu hình Vercel rewrite cho client-side routing
