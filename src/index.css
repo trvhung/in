@@ -23,7 +23,7 @@
     /* Set page size and margins if needed */
     @page {
       size: auto;
-      margin: 3mm;
+      margin: 0.5cm 1cm;
     }
   }
 }
