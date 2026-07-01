@@ -316,7 +316,7 @@ export function PriceLabelPage() {
         {/* 4. TRUE PHYSICAL PRINT SHEET */}
         <div className="hidden print-only bg-white text-black p-0 w-full">
           <div
-            className="flex flex-wrap gap-1 bg-white"
+            className="flex flex-wrap gap-0 bg-white"
             style={{
               justifyContent: 'flex-start',
             }}
@@ -343,16 +343,16 @@ export function PriceLabelPage() {
                       backgroundColor: activeTemplate.bgColor || '#FFFFFF',
                     }}
                   >
-                    <div className="absolute top-0 left-0 bg-[#E30613] text-white flex flex-col items-center justify-center font-bold leading-none w-[56px] h-[56px] select-none">
-                      <div className="text-[9px] tracking-widest uppercase font-black">SALE</div>
-                      <div className="text-[20px] font-black mt-0.5 leading-none tracking-tighter">
+                    <div className="absolute top-0 left-0 bg-[#E30613] text-white flex flex-col items-center justify-center font-bold leading-none w-[67px] h-[67px] select-none">
+                      <div className="text-[11px] tracking-widest uppercase font-black">SALE</div>
+                      <div className="text-[24px] font-black mt-0.5 leading-none tracking-tighter">
                         {discountPercent}%
                       </div>
                     </div>
 
                     <div className="flex-1 flex flex-col pt-1.5 pb-0.5">
                       {activeTemplate.showName && (
-                        <div className="text-[10px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight pl-[60px] pr-1">
+                        <div className="text-[12px] font-medium text-slate-900 leading-tight line-clamp-2 uppercase tracking-tight pl-[72px] pr-1">
                           {p.name}
                         </div>
                       )}
