@@ -110,7 +110,7 @@ export function PriceLabelPage() {
 
   // Add single product from live search
   const handleAddProduct = (itemToAdd: Product) => {
-    const existing = products.find((p) => p.sku === itemToAdd.sku || (p.barcode && p.barcode === itemToAdd.barcode));
+    const existing = products.find((p) => p.sku === itemToAdd.sku);
 
     if (existing) {
       const newQty = existing.quantity === 0 ? 1 : existing.quantity + 1;
@@ -128,7 +128,7 @@ export function PriceLabelPage() {
       const list = [...prev];
       for (const item of itemsToAdd) {
         const existing = list.find(
-          (p) => p.sku === item.sku || (p.barcode && p.barcode === item.barcode)
+          (p) => p.sku === item.sku
         );
         if (existing) {
           existing.quantity = existing.quantity + 1;
