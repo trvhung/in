@@ -1,15 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { HomePage } from './components/HomePage';
-import { PriceLabelPage } from './components/PriceLabelPage';
-import { PalletLabelPage } from './components/PalletLabelPage';
+import { PriceUpdatePage } from './components/PriceUpdatePage';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/gia" element={<PriceLabelPage />} />
-        <Route path="/pallet" element={<PalletLabelPage />} />
+        <Route path="/" element={<PriceUpdatePage />} />
       </Routes>
     </BrowserRouter>
   );

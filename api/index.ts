@@ -242,4 +242,53 @@ app.post('/api/sapo/sync', async (_req, res) => {
   }
 });
 
+app.post('/api/sapo/update-prices', async (req, res) => {
+  try {
+    const { updates } = req.body as {
+      updates: { variantId: number; price: number }[];
+    };
+
+    if (!Array.isArray(updates) || updates.length === 0) {
+      return res.status(400).json({ error: 'Missing or empty updates array' });
+    }
+
+    console.log(`[update-prices] Updating ${updates.length} variants...`);
+
+    let success = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (const update of updates) {
+      try {
+        const url = `${SAPO_BASE}/admin/variants/${update.variantId}.json`;
+        const apiRes = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            Authorization: AUTH_HEADER,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ variant: { price: update.price } }),
+        });
+
+        if (apiRes.ok) {
+          success++;
+        } else {
+          failed++;
+          const errData = await apiRes.json().catch(() => ({}));
+          errors.push(`Variant ${update.variantId}: HTTP ${apiRes.status} — ${(errData as any).errors || 'Unknown error'}`);
+        }
+      } catch (err: any) {
+        failed++;
+        errors.push(`Variant ${update.variantId}: ${err.message}`);
+      }
+    }
+
+    console.log(`[update-prices] Done: ${success} success, ${failed} failed`);
+    res.json({ success, failed, errors });
+  } catch (err: any) {
+    console.error('[update-prices] Error:', err.message);
+    res.status(500).json({ error: err.message || 'Update failed' });
+  }
+});
+
 export default app;

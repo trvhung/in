@@ -10,8 +10,6 @@ interface ProductListProps {
   onAddProduct: (product: Product) => void;
   onAddProducts: (products: Product[]) => void;
   onOpenMultiSelect: () => void;
-  activeProductId: string | null;
-  onSelectProduct: (id: string) => void;
   masterProducts: Product[];
 }
 
@@ -22,8 +20,6 @@ export function ProductList({
   onAddProduct,
   onAddProducts,
   onOpenMultiSelect,
-  activeProductId,
-  onSelectProduct,
   masterProducts,
 }: ProductListProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,12 +60,6 @@ export function ProductList({
 
     return results.slice(0, MAX_RESULTS);
   }, [masterProducts, products, deferredQuery]);
-
-  // Sum of "SL tem"
-  const totalQty = useMemo(
-    () => products.reduce((sum, p) => sum + p.quantity, 0),
-    [products]
-  );
 
   const handleSelectDropdownItem = (item: Product) => {
     onAddProduct(item);
@@ -310,122 +300,80 @@ export function ProductList({
         </div>
       </div>
 
-      {/* 2. Main Selected/Staged Print Table Headers - MATCHES screenshot 1 */}
+      {/* 2. Main Selected/Staged Print Table Headers */}
       <div className="grid grid-cols-12 px-4 py-3 text-xs font-bold text-gray-700 bg-gray-50 rounded-t-xl border-b border-gray-200">
-        <div className="col-span-5 flex items-center">
+        <div className="col-span-7 flex items-center">
           Sản phẩm ({products.length})
         </div>
-        <div className="col-span-2 text-center">SL tem ({totalQty})</div>
-        <div className="col-span-2 text-center">Giá bán</div>
-        <div className="col-span-2 text-center">Giá niêm yết</div>
+        <div className="col-span-4 text-center">Giá bán</div>
         <div className="col-span-1 text-right"></div>
       </div>
 
       {/* 3. Table Rows / Selected Products List - MATCHES screenshot 1 */}
       <div className="flex-1 overflow-y-auto max-h-[500px] border border-gray-200 border-t-0 rounded-b-xl divide-y divide-gray-100 bg-white">
         {products.length > 0 ? (
-          products.map((p) => {
-            const isActive = p.id === activeProductId;
-
-            return (
-              <div
-                key={p.id}
-                onClick={() => onSelectProduct(p.id)}
-                className={`grid grid-cols-12 items-center px-4 py-3 text-sm transition-all cursor-pointer hover:bg-slate-50/70 border-l-2 ${
-                  isActive ? 'bg-blue-50/20 border-l-blue-600' : 'border-l-transparent'
-                }`}
-              >
-                {/* Product avatar, metadata, name */}
-                <div className="col-span-5 flex items-center gap-3 pr-2">
-                  <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-400 font-bold overflow-hidden">
-                    {p.image ? (
-                      <img src={p.image} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    ) : (
-                      <span className="text-lg">📦</span>
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="font-semibold text-gray-900 text-xs md:text-[13px] leading-tight line-clamp-2 hover:text-blue-600">
-                      {p.name}
-                    </div>
-                    <div className="text-[10px] md:text-xs text-gray-400 font-mono mt-0.5 flex flex-wrap items-center gap-1.5">
-                      <span>SKU: <strong className="text-gray-700">{p.sku}</strong></span>
-                      <span className="text-gray-300">|</span>
-                      <span>Mã vạch: <strong className={p.barcode ? 'text-blue-600' : 'text-gray-400'}>{p.barcode || '---'}</strong></span>
-                    </div>
-                  </div>
+          products.map((p) => (
+            <div
+              key={p.id}
+              className="grid grid-cols-12 items-center px-4 py-3 text-sm transition-all hover:bg-slate-50/70"
+            >
+              {/* Product avatar, metadata, name */}
+              <div className="col-span-7 flex items-center gap-3 pr-2">
+                <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-400 font-bold overflow-hidden">
+                  {p.image ? (
+                    <img src={p.image} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <span className="text-lg">📦</span>
+                  )}
                 </div>
 
-                {/* SL Tem Input */}
-                <div className="col-span-2 text-center" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex justify-center">
-                    <input
-                      type="number"
-                      min="0"
-                      value={p.quantity}
-                      onChange={(e) => {
-                        const val = Math.max(0, parseInt(e.target.value) || 0);
-                        onUpdateProduct(p.id, { quantity: val });
-                      }}
-                      className="w-12 md:w-16 text-center border border-gray-200 rounded-lg py-1 px-1 text-xs md:text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                    />
+                <div className="min-w-0">
+                  <div className="font-semibold text-gray-900 text-xs md:text-[13px] leading-tight line-clamp-2">
+                    {p.name}
                   </div>
-                </div>
-
-                {/* Giá Bán Input */}
-                <div className="col-span-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
-                  <div className="relative flex items-center max-w-[95px] mx-auto">
-                    <input
-                      type="text"
-                      value={formatNumber(p.price)}
-                      placeholder="0"
-                      onChange={(e) => {
-                        const num = parseNumber(e.target.value);
-                        onUpdateProduct(p.id, { price: num });
-                      }}
-                      className="w-full text-right pr-4 pl-1 border border-gray-200 rounded-lg py-1 text-xs md:text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                    />
-                    <span className="absolute right-1.5 text-[10px] md:text-xs text-gray-400">đ</span>
+                  <div className="text-[10px] md:text-xs text-gray-400 font-mono mt-0.5 flex flex-wrap items-center gap-1.5">
+                    <span>SKU: <strong className="text-gray-700">{p.sku}</strong></span>
+                    <span className="text-gray-300">|</span>
+                    <span>Mã vạch: <strong className={p.barcode ? 'text-blue-600' : 'text-gray-400'}>{p.barcode || '---'}</strong></span>
                   </div>
-                </div>
-
-                {/* Giá So Sánh Input */}
-                <div className="col-span-2 px-1 text-center" onClick={(e) => e.stopPropagation()}>
-                  <div className="relative flex items-center max-w-[95px] mx-auto">
-                    <input
-                      type="text"
-                      value={formatNumber(p.comparePrice)}
-                      placeholder=""
-                      onChange={(e) => {
-                        const num = parseNumber(e.target.value);
-                        onUpdateProduct(p.id, { comparePrice: num });
-                      }}
-                      className="w-full text-right pr-4 pl-1 border border-gray-200 rounded-lg py-1 text-xs md:text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                    />
-                    <span className="absolute right-1.5 text-[10px] md:text-xs text-gray-400">đ</span>
-                  </div>
-                </div>
-
-                {/* Delete button Column */}
-                <div className="col-span-1 text-right flex justify-end" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => onDeleteProduct(p.id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                    title="Xóa dòng"
-                  >
-                    <X className="w-4.5 h-4.5" />
-                  </button>
                 </div>
               </div>
-            );
-          })
+
+              {/* Giá Bán Input */}
+              <div className="col-span-4 px-2 text-center" onClick={(e) => e.stopPropagation()}>
+                <div className="relative flex items-center max-w-[130px] mx-auto">
+                  <input
+                    type="text"
+                    value={formatNumber(p.price)}
+                    placeholder="0"
+                    onChange={(e) => {
+                      const num = parseNumber(e.target.value);
+                      onUpdateProduct(p.id, { price: num });
+                    }}
+                    className="w-full text-right pr-4 pl-1 border border-gray-200 rounded-lg py-1 text-xs md:text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  />
+                  <span className="absolute right-1.5 text-[10px] md:text-xs text-gray-400">đ</span>
+                </div>
+              </div>
+
+              {/* Delete button Column */}
+              <div className="col-span-1 text-right flex justify-end" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => onDeleteProduct(p.id)}
+                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                  title="Xóa dòng"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+            </div>
+          ))
         ) : (
           <div className="text-center py-20 text-gray-400 text-xs flex flex-col items-center gap-2 bg-slate-50/50">
             <span className="text-xl">📋</span>
-            <span className="font-medium">Chưa chọn sản phẩm nào để in tem</span>
+            <span className="font-medium">Chưa chọn sản phẩm nào để cập nhật giá</span>
             <p className="text-[11px] text-gray-400 max-w-sm mt-1">
-              Hãy nhập tìm kiếm sản phẩm phía trên hoặc nhấn <strong className="text-blue-600 font-bold">Chọn nhiều</strong> để đưa các mặt hàng vào bảng in nhãn.
+              Hãy nhập tìm kiếm sản phẩm phía trên hoặc nhấn <strong className="text-blue-600 font-bold">Chọn nhiều</strong> để đưa các mặt hàng vào danh sách cập nhật giá.
             </p>
           </div>
         )}
@@ -434,7 +382,7 @@ export function ProductList({
       {/* Info Help Banner */}
       <div className="mt-3.5 text-[11px] text-gray-400 flex items-center gap-1.5">
         <HelpCircle className="w-3.5 h-3.5 text-gray-300" />
-        <span>Gợi ý: Upload file Excel (SKU, Giá bán, Giá niêm yết) để thêm nhanh sản phẩm vào danh sách in.</span>
+        <span>Gợi ý: Upload file Excel (SKU, Giá bán) để thêm nhanh sản phẩm vào danh sách cập nhật giá.</span>
       </div>
     </div>
   );
