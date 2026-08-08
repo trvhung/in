@@ -81,7 +81,7 @@ async function writeJsonBlob(filename: string, data: any): Promise<void> {
       }
     }
   } catch { /* best-effort cleanup */ }
-  await put(filename, JSON.stringify(data));
+  await put(filename, JSON.stringify(data), { access: 'private' });
 }
 
 async function readJson(filename: string): Promise<any | null> {
