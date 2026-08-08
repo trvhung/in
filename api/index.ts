@@ -271,7 +271,7 @@ app.post('/api/sapo/update-prices', async (req, res) => {
 
     for (const update of updates) {
       try {
-        const url = `${SAPO_BASE}/admin/variants/${update.variantId}.json`;
+        const url = `${SAPO_BASE}/variants/${update.variantId}.json`;
         const apiRes = await fetch(url, {
           method: 'PUT',
           headers: {
