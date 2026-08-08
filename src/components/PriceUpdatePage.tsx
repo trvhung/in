@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Product } from '../types';
 import { ProductList } from './ProductList';
 import { MultiSelectModal } from './MultiSelectModal';
@@ -8,13 +8,54 @@ import {
   RefreshCw,
   CheckCircle2,
   Send,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  XCircle,
 } from 'lucide-react';
+
+interface UpdateResultItem {
+  variantId: number;
+  sku: string;
+  name: string;
+  oldPrice: number;
+  newPrice: number;
+  status: 'success' | 'failed';
+  error?: string;
+}
+
+interface UpdateLog {
+  id: string;
+  timestamp: string;
+  results: UpdateResultItem[];
+  success: number;
+  failed: number;
+}
+
+const LOG_STORAGE_KEY = 'sapo-price-update-logs';
+
+function loadLogs(): UpdateLog[] {
+  try {
+    const raw = localStorage.getItem(LOG_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLogs(logs: UpdateLog[]) {
+  localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+}
 
 export function PriceUpdatePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isMultiSelectOpen, setIsMultiSelectOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [updateResult, setUpdateResult] = useState<{ success: number; failed: number; errors: string[] } | null>(null);
+  const [lastResults, setLastResults] = useState<UpdateResultItem[] | null>(null);
+  const [lastSummary, setLastSummary] = useState<{ success: number; failed: number } | null>(null);
+  const [logs, setLogs] = useState<UpdateLog[]>(loadLogs);
+  const [showHistory, setShowHistory] = useState(false);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
   // Master products from Sapo
   const {
@@ -104,6 +145,17 @@ export function PriceUpdatePage() {
     return null;
   };
 
+  // Find old price from masterProducts by SKU
+  const findOldPrice = useCallback((sku: string): number => {
+    const master = masterProducts.find((m) => m.sku.toLowerCase() === sku.toLowerCase());
+    return master ? master.price : 0;
+  }, [masterProducts]);
+
+  const formatPrice = (price: number) => {
+    if (!price) return '0đ';
+    return price.toLocaleString('vi-VN') + 'đ';
+  };
+
   // Call API to update prices on Sapo
   const handleUpdatePrices = async () => {
     const validProducts = products.filter((p) => {
@@ -119,12 +171,16 @@ export function PriceUpdatePage() {
     if (!confirm(`Xác nhận cập nhật giá cho ${validProducts.length} sản phẩm lên Sapo?`)) return;
 
     setIsUpdating(true);
-    setUpdateResult(null);
+    setLastResults(null);
+    setLastSummary(null);
 
     try {
       const updates = validProducts.map((p) => ({
         variantId: extractVariantId(p)!,
-        price: p.price,
+        sku: p.sku,
+        name: p.name,
+        oldPrice: findOldPrice(p.sku),
+        newPrice: p.price,
       }));
 
       const res = await fetch('/api/sapo/update-prices', {
@@ -139,17 +195,35 @@ export function PriceUpdatePage() {
         throw new Error(data.error || `HTTP ${res.status}`);
       }
 
-      setUpdateResult({
-        success: data.success || 0,
-        failed: data.failed || 0,
-        errors: data.errors || [],
-      });
+      const results: UpdateResultItem[] = data.results || [];
+      const summary = { success: data.success || 0, failed: data.failed || 0 };
+
+      setLastResults(results);
+      setLastSummary(summary);
+
+      // Save to log
+      const log: UpdateLog = {
+        id: Date.now().toString(),
+        timestamp: new Date().toLocaleString('vi-VN'),
+        results,
+        success: summary.success,
+        failed: summary.failed,
+      };
+      const updatedLogs = [log, ...logs].slice(0, 50); // keep last 50
+      setLogs(updatedLogs);
+      saveLogs(updatedLogs);
+
     } catch (err: any) {
-      setUpdateResult({
-        success: 0,
-        failed: validProducts.length,
-        errors: [err.message || 'Lỗi không xác định'],
-      });
+      setLastSummary({ success: 0, failed: validProducts.length });
+      setLastResults(validProducts.map((p) => ({
+        variantId: extractVariantId(p)!,
+        sku: p.sku,
+        name: p.name,
+        oldPrice: findOldPrice(p.sku),
+        newPrice: p.price,
+        status: 'failed' as const,
+        error: err.message || 'Lỗi không xác định',
+      })));
     } finally {
       setIsUpdating(false);
     }
@@ -268,29 +342,129 @@ export function PriceUpdatePage() {
             </button>
           </div>
 
-          {/* Update result */}
-          {updateResult && (
-            <div className={`mt-4 p-4 rounded-xl text-sm ${
-              updateResult.failed === 0
-                ? 'bg-green-50 border border-green-200 text-green-800'
-                : 'bg-amber-50 border border-amber-200 text-amber-800'
-            }`}>
-              <div className="font-bold mb-1">
-                {updateResult.failed === 0 ? '✅ Cập nhật thành công!' : '⚠️ Cập nhật hoàn tất (có lỗi)'}
+          {/* Update result detail table */}
+          {lastResults && lastSummary && (
+            <div className="mt-4">
+              <div className={`p-3 rounded-xl text-sm font-bold mb-3 ${
+                lastSummary.failed === 0
+                  ? 'bg-green-50 border border-green-200 text-green-800'
+                  : 'bg-amber-50 border border-amber-200 text-amber-800'
+              }`}>
+                {lastSummary.failed === 0
+                  ? '✅ Cập nhật thành công!'
+                  : `⚠️ Cập nhật hoàn tất: ${lastSummary.success} thành công, ${lastSummary.failed} thất bại`}
               </div>
-              <div>
-                Thành công: <strong>{updateResult.success}</strong> | Thất bại: <strong>{updateResult.failed}</strong>
+
+              <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-600 font-semibold">
+                      <th className="text-left px-3 py-2 w-8">#</th>
+                      <th className="text-left px-3 py-2">SKU</th>
+                      <th className="text-left px-3 py-2">Tên sản phẩm</th>
+                      <th className="text-right px-3 py-2">Giá cũ</th>
+                      <th className="text-right px-3 py-2">Giá mới</th>
+                      <th className="text-center px-3 py-2 w-20">Kết quả</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {lastResults.map((item, i) => (
+                      <tr key={i} className={item.status === 'failed' ? 'bg-red-50/30' : 'hover:bg-gray-50'}>
+                        <td className="px-3 py-2 text-gray-400">{i + 1}</td>
+                        <td className="px-3 py-2 font-mono font-semibold text-gray-700">{item.sku}</td>
+                        <td className="px-3 py-2 text-gray-700 max-w-[200px] truncate">{item.name}</td>
+                        <td className="px-3 py-2 text-right text-gray-500">{formatPrice(item.oldPrice)}</td>
+                        <td className="px-3 py-2 text-right font-semibold text-blue-700">{formatPrice(item.newPrice)}</td>
+                        <td className="px-3 py-2 text-center">
+                          {item.status === 'success' ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 font-semibold">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> OK
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-red-500 font-semibold" title={item.error}>
+                              <XCircle className="w-3.5 h-3.5" /> Lỗi
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              {updateResult.errors.length > 0 && (
-                <ul className="mt-2 list-disc list-inside text-xs space-y-0.5">
-                  {updateResult.errors.map((err, i) => (
-                    <li key={i}>{err}</li>
-                  ))}
-                </ul>
-              )}
             </div>
           )}
         </div>
+
+        {/* History Logs */}
+        {logs.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center gap-2 text-sm font-bold text-gray-700 hover:text-gray-900 cursor-pointer w-full text-left"
+            >
+              <Clock className="w-4 h-4 text-gray-400" />
+              Lịch sử cập nhật ({logs.length})
+              {showHistory ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
+            </button>
+
+            {showHistory && (
+              <div className="mt-4 space-y-3">
+                {logs.map((log) => (
+                  <div key={log.id} className="border border-gray-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                    >
+                      <div className={`w-2 h-2 rounded-full ${log.failed === 0 ? 'bg-green-500' : 'bg-amber-500'}`} />
+                      <span className="text-sm font-semibold text-gray-700">{log.timestamp}</span>
+                      <span className="text-xs text-gray-500">
+                        {log.success} thành công, {log.failed} thất bại
+                      </span>
+                      {expandedLogId === log.id ? (
+                        <ChevronUp className="w-4 h-4 ml-auto text-gray-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 ml-auto text-gray-400" />
+                      )}
+                    </button>
+
+                    {expandedLogId === log.id && (
+                      <div className="overflow-x-auto border-t border-gray-100">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="bg-gray-50 text-gray-500 font-semibold">
+                              <th className="text-left px-3 py-1.5">SKU</th>
+                              <th className="text-left px-3 py-1.5">Tên</th>
+                              <th className="text-right px-3 py-1.5">Giá cũ</th>
+                              <th className="text-right px-3 py-1.5">Giá mới</th>
+                              <th className="text-center px-3 py-1.5 w-16">KQ</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-50">
+                            {log.results.map((item, i) => (
+                              <tr key={i} className={item.status === 'failed' ? 'bg-red-50/30' : ''}>
+                                <td className="px-3 py-1.5 font-mono text-gray-700">{item.sku}</td>
+                                <td className="px-3 py-1.5 text-gray-600 max-w-[180px] truncate">{item.name}</td>
+                                <td className="px-3 py-1.5 text-right text-gray-400">{formatPrice(item.oldPrice)}</td>
+                                <td className="px-3 py-1.5 text-right font-semibold text-blue-700">{formatPrice(item.newPrice)}</td>
+                                <td className="px-3 py-1.5 text-center">
+                                  {item.status === 'success' ? (
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500 inline" />
+                                  ) : (
+                                    <XCircle className="w-3.5 h-3.5 text-red-400 inline" />
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* MultiSelectModal */}

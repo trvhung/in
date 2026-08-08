@@ -242,10 +242,23 @@ app.post('/api/sapo/sync', async (_req, res) => {
   }
 });
 
+interface PriceUpdateItem {
+  variantId: number;
+  sku: string;
+  name: string;
+  oldPrice: number;
+  newPrice: number;
+}
+
+interface UpdateResultItem extends PriceUpdateItem {
+  status: 'success' | 'failed';
+  error?: string;
+}
+
 app.post('/api/sapo/update-prices', async (req, res) => {
   try {
     const { updates } = req.body as {
-      updates: { variantId: number; price: number }[];
+      updates: PriceUpdateItem[];
     };
 
     if (!Array.isArray(updates) || updates.length === 0) {
@@ -254,9 +267,7 @@ app.post('/api/sapo/update-prices', async (req, res) => {
 
     console.log(`[update-prices] Updating ${updates.length} variants...`);
 
-    let success = 0;
-    let failed = 0;
-    const errors: string[] = [];
+    const results: UpdateResultItem[] = [];
 
     for (const update of updates) {
       try {
@@ -267,24 +278,28 @@ app.post('/api/sapo/update-prices', async (req, res) => {
             Authorization: AUTH_HEADER,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ variant: { price: update.price } }),
+          body: JSON.stringify({ variant: { price: update.newPrice } }),
         });
 
         if (apiRes.ok) {
-          success++;
+          results.push({ ...update, status: 'success' });
         } else {
-          failed++;
           const errData = await apiRes.json().catch(() => ({}));
-          errors.push(`Variant ${update.variantId}: HTTP ${apiRes.status} — ${(errData as any).errors || 'Unknown error'}`);
+          results.push({
+            ...update,
+            status: 'failed',
+            error: `HTTP ${apiRes.status} — ${(errData as any).errors || 'Unknown error'}`,
+          });
         }
       } catch (err: any) {
-        failed++;
-        errors.push(`Variant ${update.variantId}: ${err.message}`);
+        results.push({ ...update, status: 'failed', error: err.message });
       }
     }
 
+    const success = results.filter((r) => r.status === 'success').length;
+    const failed = results.filter((r) => r.status === 'failed').length;
     console.log(`[update-prices] Done: ${success} success, ${failed} failed`);
-    res.json({ success, failed, errors });
+    res.json({ results, success, failed });
   } catch (err: any) {
     console.error('[update-prices] Error:', err.message);
     res.status(500).json({ error: err.message || 'Update failed' });
