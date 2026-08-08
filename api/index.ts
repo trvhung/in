@@ -306,4 +306,16 @@ app.post('/api/sapo/update-prices', async (req, res) => {
   }
 });
 
+app.post('/api/auth', async (req, res) => {
+  const { password } = req.body as { password?: string };
+  const sitePassword = process.env.SITE_PASSWORD;
+  if (!sitePassword) {
+    return res.status(500).json({ error: 'SITE_PASSWORD not configured' });
+  }
+  if (!password || password !== sitePassword) {
+    return res.status(401).json({ error: 'Mật khẩu không đúng' });
+  }
+  res.json({ success: true });
+});
+
 export default app;
