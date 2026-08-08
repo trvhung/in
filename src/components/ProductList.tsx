@@ -108,12 +108,10 @@ export function ProductList({
           const row = rows[i];
           const sku = String(row[0] || '').trim();
           const priceRaw = String(row[1] || '0').trim();
-          const compareRaw = String(row[2] || '0').trim();
 
           if (!sku) continue;
 
           const excelPrice = parseNumber(priceRaw);
-          const excelCompare = parseNumber(compareRaw);
 
           // Look up product from Sapo master by SKU
           const masterMatch = masterProducts.find(
@@ -125,19 +123,10 @@ export function ProductList({
               ...masterMatch,
               quantity: 1,
               price: excelPrice || masterMatch.price,
-              comparePrice: excelCompare || masterMatch.comparePrice || 0,
             });
           } else {
-            // Create custom product from Excel data
-            newProducts.push({
-              id: 'excel-' + Date.now() + '-' + i,
-              name: sku,
-              sku: sku,
-              barcode: '',
-              quantity: 1,
-              price: excelPrice,
-              comparePrice: excelCompare,
-            });
+            // SKU not found in master — skip (can't update without variant ID)
+            console.warn(`SKU "${sku}" không tìm thấy trong danh mục Sapo`);
           }
         }
 
@@ -158,15 +147,15 @@ export function ProductList({
   const handleDownloadSample = () => {
     const wb = XLSX.utils.book_new();
     const sampleData = [
-      ['SKU', 'Giá bán', 'Giá niêm yết'],
-      ['SP001', '150000', '200000'],
-      ['SP002', '85000', '120000'],
+      ['SKU', 'Giá bán'],
+      ['SP001', '150000'],
+      ['SP002', '85000'],
     ];
     const ws = XLSX.utils.aoa_to_sheet(sampleData);
     // Set column widths
-    ws['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 15 }];
-    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách sản phẩm');
-    XLSX.writeFile(wb, 'mau-upload-san-pham.xlsx');
+    ws['!cols'] = [{ wch: 15 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách cập nhật giá');
+    XLSX.writeFile(wb, 'mau-upload-cap-nhat-gia.xlsx');
   };
 
   return (
