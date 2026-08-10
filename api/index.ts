@@ -70,8 +70,7 @@ async function readJsonBlob(filename: string): Promise<any | null> {
 }
 
 async function writeJsonBlob(filename: string, data: any): Promise<void> {
-  // addRandomSuffix: false → overwrite the same blob in-place, never delete
-  await put(filename, JSON.stringify(data), { access: 'private', addRandomSuffix: false });
+  await put(filename, JSON.stringify(data), { access: 'private', addRandomSuffix: false, allowOverwrite: true });
 }
 
 async function readJson(filename: string): Promise<any | null> {
