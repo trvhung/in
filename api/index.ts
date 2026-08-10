@@ -1,7 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
-import { put, list, del } from '@vercel/blob';
+import { put, list } from '@vercel/blob';
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -59,11 +59,9 @@ const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 async function readJsonBlob(filename: string): Promise<any | null> {
   try {
     const { blobs } = await list({ prefix: filename });
-    const latest = blobs
-      .filter(b => b.pathname === filename)
-      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0];
-    if (!latest) return null;
-    const res = await fetch(latest.url);
+    const match = blobs.find(b => b.pathname === filename);
+    if (!match) return null;
+    const res = await fetch(match.url);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -72,16 +70,8 @@ async function readJsonBlob(filename: string): Promise<any | null> {
 }
 
 async function writeJsonBlob(filename: string, data: any): Promise<void> {
-  // Clean up old blobs with the same pathname (put creates a new one each time)
-  try {
-    const { blobs } = await list({ prefix: filename });
-    for (const b of blobs) {
-      if (b.pathname === filename) {
-        await del(b.url);
-      }
-    }
-  } catch { /* best-effort cleanup */ }
-  await put(filename, JSON.stringify(data), { access: 'private' });
+  // addRandomSuffix: false → overwrite the same blob in-place, never delete
+  await put(filename, JSON.stringify(data), { access: 'private', addRandomSuffix: false });
 }
 
 async function readJson(filename: string): Promise<any | null> {
