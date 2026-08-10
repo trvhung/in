@@ -58,13 +58,23 @@ const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 async function readJsonBlob(filename: string): Promise<any | null> {
   try {
+    console.log(`[blob-read] listing blobs with prefix: "${filename}"`);
     const { blobs } = await list({ prefix: filename });
+    console.log(`[blob-read] got ${blobs.length} blobs:`, blobs.map(b => ({ pathname: b.pathname, size: b.size })));
     const match = blobs.find(b => b.pathname === filename);
-    if (!match) return null;
+    if (!match) {
+      console.log(`[blob-read] ❌ no exact match for "${filename}" among ${blobs.length} blobs`);
+      return null;
+    }
+    console.log(`[blob-read] found match: ${match.pathname}, fetching...`);
     const res = await fetch(match.url);
+    console.log(`[blob-read] fetch status: ${res.status}`);
     if (!res.ok) return null;
-    return res.json();
-  } catch {
+    const json = await res.json();
+    console.log(`[blob-read] ✅ parsed JSON, ${Array.isArray(json) ? json.length + ' items' : typeof json}`);
+    return json;
+  } catch (err: any) {
+    console.error(`[blob-read] ❌ exception:`, err.message);
     return null;
   }
 }
