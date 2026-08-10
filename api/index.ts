@@ -61,10 +61,7 @@ async function readJsonBlob(filename: string): Promise<any | null> {
     const { blobs } = await list({ prefix: filename });
     const match = blobs.find(b => b.pathname === filename);
     if (!match) return null;
-    // Private blobs need auth token in the fetch
-    const res = await fetch(match.url, {
-      headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
-    });
+    const res = await fetch(match.url);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -73,7 +70,7 @@ async function readJsonBlob(filename: string): Promise<any | null> {
 }
 
 async function writeJsonBlob(filename: string, data: any): Promise<void> {
-  await put(filename, JSON.stringify(data), { access: 'private', addRandomSuffix: false, allowOverwrite: true });
+  await put(filename, JSON.stringify(data), { access: 'public', addRandomSuffix: false, allowOverwrite: true });
 }
 
 async function readJson(filename: string): Promise<any | null> {
