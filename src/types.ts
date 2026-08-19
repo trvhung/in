@@ -24,6 +24,11 @@ export interface LabelTemplate {
   showBarcodeText: boolean;
   showBarcode?: boolean;
   bgColor?: string; // màu nền cho sale template
+  customSaleLabel?: boolean; // tùy chỉnh text ô SALE
+  saleLabelLine1?: string; // dòng 1 trong ô SALE (mặc định "SALE")
+  saleLabelLine2?: string; // dòng 2 trong ô SALE (mặc định "50%")
+  saleLabelLine1Size?: number; // font size dòng 1 (px)
+  saleLabelLine2Size?: number; // font size dòng 2 (px)
 }
 
 export interface PalletConfig {

@@ -31,6 +31,11 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
     showBarcodeText: false,
     showBarcode: false,
     bgColor: '#FFFFFF',
+    customSaleLabel: false,
+    saleLabelLine1: 'SALE',
+    saleLabelLine2: '50%',
+    saleLabelLine1Size: 11,
+    saleLabelLine2Size: 24,
   },
   {
     id: 'list-price',
@@ -331,6 +336,14 @@ export function PriceLabelPage() {
                   : 50;
                 const displayPrice = p.price > 0 ? p.price : (p.comparePrice || 0);
                 const hasStrikeThrough = p.price > 0 && p.comparePrice && p.comparePrice > p.price;
+                const saleLine1 = activeTemplate.customSaleLabel
+                  ? (activeTemplate.saleLabelLine1 || 'SALE')
+                  : 'SALE';
+                const saleLine2 = activeTemplate.customSaleLabel
+                  ? (activeTemplate.saleLabelLine2 || '50%')
+                  : `${discountPercent}%`;
+                const saleLine1Size = activeTemplate.saleLabelLine1Size || 11;
+                const saleLine2Size = activeTemplate.saleLabelLine2Size || 24;
 
                 return (
                   <div
@@ -344,9 +357,17 @@ export function PriceLabelPage() {
                     }}
                   >
                     <div className="absolute top-0 left-0 bg-[#E30613] text-white flex flex-col items-center justify-center font-bold leading-none w-[67px] h-[67px] select-none">
-                      <div className="text-[11px] tracking-widest uppercase font-black">SALE</div>
-                      <div className="text-[24px] font-black mt-0.5 leading-none tracking-tighter">
-                        {discountPercent}%
+                      <div
+                        className="tracking-widest uppercase font-black leading-none"
+                        style={{ fontSize: `${saleLine1Size}px` }}
+                      >
+                        {saleLine1}
+                      </div>
+                      <div
+                        className="font-black mt-0.5 leading-none tracking-tighter"
+                        style={{ fontSize: `${saleLine2Size}px` }}
+                      >
+                        {saleLine2}
                       </div>
                     </div>
 

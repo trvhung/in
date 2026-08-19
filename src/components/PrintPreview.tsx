@@ -162,6 +162,64 @@ export function PrintPreview({
               )}
             </button>
 
+            {/* Custom SALE label text */}
+            {activeTemplate.id.startsWith('sale-') && (
+              <>
+                <button
+                  onClick={() => onUpdateTemplateOptions({ customSaleLabel: !activeTemplate.customSaleLabel })}
+                  className="flex items-center justify-between py-0.5 hover:text-gray-900"
+                >
+                  <span>Tùy chỉnh text ô SALE</span>
+                  {activeTemplate.customSaleLabel ? (
+                    <ToggleRight className="w-5 h-5 text-blue-600" />
+                  ) : (
+                    <ToggleLeft className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+
+                {activeTemplate.customSaleLabel && (
+                  <div className="flex flex-col gap-2 pl-0.5 mt-1 animate-fade-in">
+                    <div className="flex items-center gap-2">
+                      <span className="w-9 shrink-0 text-gray-500">Dòng 1</span>
+                      <input
+                        type="text"
+                        value={activeTemplate.saleLabelLine1 || 'SALE'}
+                        onChange={(e) => onUpdateTemplateOptions({ saleLabelLine1: e.target.value })}
+                        className="flex-1 min-w-0 text-xs bg-white border border-gray-200 rounded-lg py-1 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                      />
+                      <input
+                        type="number"
+                        min={6}
+                        max={40}
+                        value={activeTemplate.saleLabelLine1Size || 11}
+                        onChange={(e) => onUpdateTemplateOptions({ saleLabelLine1Size: Number(e.target.value) })}
+                        className="w-14 text-xs bg-white border border-gray-200 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                        title="Cỡ chữ dòng 1 (px)"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-9 shrink-0 text-gray-500">Dòng 2</span>
+                      <input
+                        type="text"
+                        value={activeTemplate.saleLabelLine2 || '50%'}
+                        onChange={(e) => onUpdateTemplateOptions({ saleLabelLine2: e.target.value })}
+                        className="flex-1 min-w-0 text-xs bg-white border border-gray-200 rounded-lg py-1 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                      />
+                      <input
+                        type="number"
+                        min={6}
+                        max={40}
+                        value={activeTemplate.saleLabelLine2Size || 24}
+                        onChange={(e) => onUpdateTemplateOptions({ saleLabelLine2Size: Number(e.target.value) })}
+                        className="w-14 text-xs bg-white border border-gray-200 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                        title="Cỡ chữ dòng 2 (px)"
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
             {/* Color picker for sale templates */}
             {activeTemplate.id.startsWith('sale-') && (
               <div className="flex items-center justify-between py-0.5">
@@ -198,9 +256,19 @@ export function PrintPreview({
               >
                 {/* SALE box sát góc trên-trái */}
                 <div className="absolute top-0 left-0 bg-[#E30613] text-white flex flex-col items-center justify-center font-bold leading-none w-[67px] h-[67px] select-none">
-                  <div className="text-[11px] tracking-widest uppercase font-black">SALE</div>
-                  <div className="text-[24px] font-black mt-0.5 leading-none tracking-tighter">
-                    {getDiscountPercent(activeProduct)}%
+                  <div
+                    className="tracking-widest uppercase font-black leading-none"
+                    style={{ fontSize: `${activeTemplate.saleLabelLine1Size || 11}px` }}
+                  >
+                    {activeTemplate.customSaleLabel ? (activeTemplate.saleLabelLine1 || 'SALE') : 'SALE'}
+                  </div>
+                  <div
+                    className="font-black mt-0.5 leading-none tracking-tighter"
+                    style={{ fontSize: `${activeTemplate.saleLabelLine2Size || 24}px` }}
+                  >
+                    {activeTemplate.customSaleLabel
+                      ? (activeTemplate.saleLabelLine2 || '50%')
+                      : `${getDiscountPercent(activeProduct)}%`}
                   </div>
                 </div>
 
