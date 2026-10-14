@@ -26,9 +26,9 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
   const promoPrice = product.price > 0 ? product.price : listPrice;
 
   const tiers = [
-    { label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[21px] font-bold' },
-    { label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[21px] font-bold' },
-    { label: 'VVIP', percent: percents.vvip, color: '#111111', labelClass: 'text-[13px] font-normal' },
+    { label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[17px] font-bold' },
+    { label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[17px] font-bold' },
+    { label: 'VVIP', percent: percents.vvip, color: '#111111', labelClass: 'text-[11.5px] font-normal' },
   ];
 
   return (
@@ -37,21 +37,21 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
       style={{ width: template.width, height: template.height, pageBreakInside: 'avoid' }}
     >
       <div className="flex justify-center">
-        <img src={elmichLogo} alt="Elmich" className="h-[15px] w-auto" />
+        <img src={elmichLogo} alt="Elmich" className="h-[18px] w-auto" />
       </div>
 
-      <div className="text-center text-[12.5px] font-black tracking-[0.04em] leading-none mt-[3px] whitespace-nowrap">
+      <div className="text-center text-[14px] font-black tracking-[0.03em] leading-none mt-[3px] whitespace-nowrap">
         GIÁ ĐẶC QUYỀN THÀNH VIÊN
       </div>
 
-      <div className="flex justify-between items-baseline mt-[4px] leading-none text-[8px]">
+      <div className="flex justify-between items-baseline mt-[4px] leading-none text-[9.5px]">
         <div className="flex items-baseline gap-1">
           <span>Giá NY:</span>
-          <span className="text-[10px] font-semibold">{fmt(listPrice)}</span>
+          <span className="text-[12px] font-semibold">{fmt(listPrice)}</span>
         </div>
         <div className="flex items-baseline gap-1">
           <span className="font-bold">Giá KM:</span>
-          <span className="text-[10px] font-bold">{fmt(promoPrice)}</span>
+          <span className="text-[12px] font-bold">{fmt(promoPrice)}</span>
         </div>
       </div>
 
@@ -65,12 +65,12 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
               {tier.label}
             </span>
             <span
-              className={`w-[20%] text-[12px] ${i < 2 ? 'font-semibold' : ''}`}
+              className={`w-[20%] text-[10.5px] ${i < 2 ? 'font-semibold' : ''}`}
               style={{ color: tier.color }}
             >
               -{tier.percent}%
             </span>
-            <span className="flex-1 text-right text-[15px] font-bold tracking-tight" style={{ color: tier.color }}>
+            <span className="flex-1 text-right text-[13px] font-bold tracking-tight" style={{ color: tier.color }}>
               {fmt(calcMemberPrice(promoPrice, tier.percent, rounding))}
             </span>
           </div>
