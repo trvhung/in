@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product, LabelTemplate } from '../types';
 import { ProductList } from './ProductList';
@@ -6,6 +6,7 @@ import { PrintPreview } from './PrintPreview';
 import { PrintLayout } from './PrintLayout';
 import { Barcode } from './Barcode';
 import { MultiSelectModal } from './MultiSelectModal';
+import { LoyaltyLabel, DEFAULT_LOYALTY_PERCENTS } from './LoyaltyLabel';
 import { useMasterProducts } from '../hooks/useMasterProducts';
 import {
   Printer,
@@ -56,6 +57,22 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
     saleLabelLine2: '50%',
     saleLabelLine1Size: 11,
     saleLabelLine2Size: 24,
+  },
+  {
+    id: 'loyalty-70x40',
+    name: 'Tem Loyalty (Mica 70x40mm)',
+    width: '70mm',
+    height: '40mm',
+    columns: 1,
+    description: 'Giá đặc quyền thành viên Member / VIP / VVIP - khổ 70x40mm',
+    showName: false,
+    showPrice: true,
+    showComparePrice: true,
+    showSku: false,
+    showBarcodeText: false,
+    showBarcode: false,
+    loyaltyPercents: { ...DEFAULT_LOYALTY_PERCENTS },
+    loyaltyRounding: 1000,
   },
   {
     id: 'list-price',
@@ -428,6 +445,10 @@ export function PriceLabelPage() {
                     </div>
                   </div>
                 );
+              }
+
+              if (activeTemplate.id.startsWith('loyalty-')) {
+                return <Fragment key={index}><LoyaltyLabel product={p} template={activeTemplate} /></Fragment>;
               }
 
               if (activeTemplate.id === 'list-price') {

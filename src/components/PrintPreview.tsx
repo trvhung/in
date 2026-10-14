@@ -1,5 +1,6 @@
 import { LabelTemplate, Product } from '../types';
 import { Barcode } from './Barcode';
+import { LoyaltyLabel, DEFAULT_LOYALTY_PERCENTS } from './LoyaltyLabel';
 import { Printer, Settings, Check, LayoutGrid, ToggleLeft, ToggleRight, Info } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,6 +24,8 @@ export function PrintPreview({
   onPrint,
 }: PrintPreviewProps) {
   const [showSettings, setShowSettings] = useState(false);
+  const isLoyalty = activeTemplate.id.startsWith('loyalty-');
+  const loyaltyPercents = { ...DEFAULT_LOYALTY_PERCENTS, ...activeTemplate.loyaltyPercents };
 
   // Compute total number of labels to print
   const totalLabels = products.reduce((acc, p) => acc + p.quantity, 0);
@@ -89,7 +92,48 @@ export function PrintPreview({
         {showSettings && (
           <div className="mb-5 p-3.5 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-2.5 text-xs text-gray-600 animate-fade-in">
             <div className="font-semibold text-gray-700 text-xs mb-1 border-b border-gray-200 pb-1">Tùy chỉnh nội dung hiển thị</div>
-            
+
+            {isLoyalty ? (
+              <div className="flex flex-col gap-2">
+                <div className="text-gray-500 leading-snug">
+                  Giá thành viên = Giá KM giảm thêm % bên dưới (Giá KM trống thì dùng Giá niêm yết).
+                </div>
+                {([
+                  ['member', 'Member'],
+                  ['vip', 'VIP'],
+                  ['vvip', 'VVIP'],
+                ] as const).map(([key, label]) => (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <span>Giảm {label} (%)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={loyaltyPercents[key]}
+                      onChange={(e) =>
+                        onUpdateTemplateOptions({
+                          loyaltyPercents: { ...loyaltyPercents, [key]: Number(e.target.value) },
+                        })
+                      }
+                      className="w-16 text-xs bg-white border border-gray-200 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                    />
+                  </div>
+                ))}
+                <div className="flex items-center justify-between gap-2">
+                  <span>Làm tròn giá</span>
+                  <select
+                    value={activeTemplate.loyaltyRounding ?? 1000}
+                    onChange={(e) => onUpdateTemplateOptions({ loyaltyRounding: Number(e.target.value) })}
+                    className="text-xs bg-white border border-gray-200 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                  >
+                    <option value={1}>Không làm tròn</option>
+                    <option value={100}>100đ</option>
+                    <option value={1000}>1.000đ</option>
+                  </select>
+                </div>
+              </div>
+            ) : (
+            <>
             <button
               onClick={() => onUpdateTemplateOptions({ showName: !activeTemplate.showName })}
               className="flex items-center justify-between py-0.5 hover:text-gray-900"
@@ -161,6 +205,8 @@ export function PrintPreview({
                 <ToggleLeft className="w-5 h-5 text-gray-400" />
               )}
             </button>
+            </>
+            )}
 
             {/* Custom SALE label text */}
             {activeTemplate.id.startsWith('sale-') && (
@@ -237,14 +283,16 @@ export function PrintPreview({
 
         {/* Single Label Realistic Preview Stage */}
         <div className={`rounded-xl flex flex-col items-center justify-center transition-all overflow-hidden ${
-          (activeTemplate.id.startsWith('sale-') || activeTemplate.id === 'list-price')
+          (activeTemplate.id.startsWith('sale-') || isLoyalty || activeTemplate.id === 'list-price')
             ? 'bg-transparent p-2'
             : 'bg-gray-100 border border-gray-200 p-5'
         }`}
-        style={(activeTemplate.id.startsWith('sale-') || activeTemplate.id === 'list-price') ? { minHeight: activeTemplate.id === 'list-price' ? '180px' : undefined } : { minHeight: '220px' }}
+        style={(activeTemplate.id.startsWith('sale-') || isLoyalty || activeTemplate.id === 'list-price') ? { minHeight: activeTemplate.id === 'list-price' ? '180px' : undefined } : { minHeight: '220px' }}
         >
           {activeProduct ? (
-            activeTemplate.id.startsWith('sale-') ? (
+            isLoyalty ? (
+              <LoyaltyLabel product={activeProduct} template={activeTemplate} />
+            ) : activeTemplate.id.startsWith('sale-') ? (
               /* Sale Preview - exact print size */
               <div
                 className="text-black transition-all flex flex-col justify-between relative select-none text-left border border-gray-300"

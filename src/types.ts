@@ -29,6 +29,8 @@ export interface LabelTemplate {
   saleLabelLine2?: string; // dòng 2 trong ô SALE (mặc định "50%")
   saleLabelLine1Size?: number; // font size dòng 1 (px)
   saleLabelLine2Size?: number; // font size dòng 2 (px)
+  loyaltyPercents?: { member: number; vip: number; vvip: number }; // % giảm thêm trên Giá KM
+  loyaltyRounding?: number; // bước làm tròn giá thành viên (đ), vd 1000
 }
 
 export interface PalletConfig {
