@@ -1,5 +1,5 @@
 import { LabelTemplate, Product } from '../types';
-import elmichLogo from '../assets/elmich-logo.png';
+import elmichLogo from '../assets/elmich-logo.svg';
 
 export const DEFAULT_LOYALTY_PERCENTS = { member: 10, vip: 13, vvip: 15 };
 
@@ -40,7 +40,7 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
         <img src={elmichLogo} alt="Elmich" className="h-[18px] w-auto" />
       </div>
 
-      <div className="text-center text-[14px] font-black tracking-[0.03em] leading-none mt-[3px] whitespace-nowrap">
+      <div className="text-center text-[14px] font-bold tracking-[0.03em] leading-none mt-[3px] whitespace-nowrap">
         GIÁ ĐẶC QUYỀN THÀNH VIÊN
       </div>
 
