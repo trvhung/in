@@ -24,7 +24,6 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
   const rounding = template.loyaltyRounding ?? 1000;
   const listPrice = product.comparePrice || 0;
   const promoPrice = product.price > 0 ? product.price : listPrice;
-  const showName = template.showName !== false;
   const showSku = template.showSku !== false;
 
   const tiers = [
@@ -46,32 +45,21 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
         GIÁ ĐẶC QUYỀN THÀNH VIÊN
       </div>
 
-      <div className="mt-[5px] leading-tight">
-        <div className="flex justify-between items-baseline gap-2">
-          {showName && product.name ? (
-            <div className="flex-1 min-w-0 font-bold text-[9.5px] text-gray-900 truncate uppercase" title={product.name}>
-              {product.name}
-            </div>
-          ) : (
-            <div className="flex-1" />
-          )}
-          {showSku && product.sku && (
-            <div className="shrink-0 text-[8.5px] font-medium text-gray-600 font-mono">
-              <span>SKU: </span>
-              <span className="font-bold text-gray-900">{product.sku}</span>
-            </div>
-          )}
+      {showSku && product.sku && (
+        <div className="text-center text-[10px] font-semibold text-gray-700 font-mono tracking-wide mt-[4px] leading-none">
+          <span>SKU: </span>
+          <span className="font-bold text-gray-900">{product.sku}</span>
         </div>
+      )}
 
-        <div className="flex justify-between items-baseline mt-[3px] text-[8.5px] leading-none">
-          <div className="flex items-baseline gap-1">
-            <span className="text-gray-500">Giá NY:</span>
-            <span className="text-[11px] font-semibold text-gray-800">{fmt(listPrice)}</span>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="font-bold text-gray-800">Giá KM:</span>
-            <span className="text-[11.5px] font-bold text-gray-950">{fmt(promoPrice)}</span>
-          </div>
+      <div className="flex justify-between items-baseline mt-[5px] text-[8.5px] leading-none">
+        <div className="flex items-baseline gap-1">
+          <span className="text-gray-500">Giá NY:</span>
+          <span className="text-[11.5px] font-semibold text-gray-800">{fmt(listPrice)}</span>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="font-bold text-gray-800">Giá KM:</span>
+          <span className="text-[12px] font-bold text-gray-950">{fmt(promoPrice)}</span>
         </div>
       </div>
 

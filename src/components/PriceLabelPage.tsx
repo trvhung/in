@@ -65,7 +65,7 @@ const INITIAL_TEMPLATES: LabelTemplate[] = [
     height: '40mm',
     columns: 1,
     description: 'Giá đặc quyền thành viên Member / VIP / VVIP - khổ 70x40mm',
-    showName: true,
+    showName: false,
     showPrice: true,
     showComparePrice: true,
     showSku: true,
