@@ -28,25 +28,25 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
   const showSku = template.showSku !== false;
 
   const tiers = [
-    { label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[16px] font-bold' },
-    { label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[16px] font-bold' },
-    { label: 'VVIP', percent: percents.vvip, color: '#111111', labelClass: 'text-[11.5px] font-normal' },
+    { label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[13.5px] font-bold' },
+    { label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[13.5px] font-bold' },
+    { label: 'VVIP', percent: percents.vvip, color: '#111111', labelClass: 'text-[10.5px] font-normal' },
   ];
 
   return (
     <div
-      className={`bg-white text-black flex flex-col overflow-hidden relative select-none border border-gray-300 px-[9px] pt-[4px] pb-[3px] ${className}`}
+      className={`bg-white text-black flex flex-col overflow-hidden relative select-none border border-gray-300 px-[9px] pt-[5px] pb-[4px] ${className}`}
       style={{ width: template.width, height: template.height, pageBreakInside: 'avoid' }}
     >
       <div className="flex justify-center">
-        <img src={elmichLogo} alt="Elmich" className="h-[15px] w-auto" />
+        <img src={elmichLogo} alt="Elmich" className="h-[16px] w-auto" />
       </div>
 
-      <div className="text-center text-[12.5px] font-bold tracking-[0.03em] leading-none mt-[2px] whitespace-nowrap">
+      <div className="text-center text-[12.5px] font-bold tracking-[0.03em] leading-none mt-[3.5px] whitespace-nowrap">
         GIÁ ĐẶC QUYỀN THÀNH VIÊN
       </div>
 
-      <div className="mt-[2.5px] leading-tight">
+      <div className="mt-[5px] leading-tight">
         <div className="flex justify-between items-baseline gap-2">
           {showName && product.name ? (
             <div className="flex-1 min-w-0 font-bold text-[9.5px] text-gray-900 truncate uppercase" title={product.name}>
@@ -63,7 +63,7 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
           )}
         </div>
 
-        <div className="flex justify-between items-baseline mt-[1px] text-[8.5px] leading-none">
+        <div className="flex justify-between items-baseline mt-[3px] text-[8.5px] leading-none">
           <div className="flex items-baseline gap-1">
             <span className="text-gray-500">Giá NY:</span>
             <span className="text-[11px] font-semibold text-gray-800">{fmt(listPrice)}</span>
@@ -75,7 +75,7 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col mt-[2px]">
+      <div className="flex-1 flex flex-col mt-[5px] border-t border-[#6B7194]">
         {tiers.map((tier, i) => (
           <div
             key={tier.label}
@@ -85,12 +85,12 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
               {tier.label}
             </span>
             <span
-              className={`w-[20%] text-[10.5px] ${i < 2 ? 'font-semibold' : ''}`}
+              className={`w-[20%] text-[10px] ${i < 2 ? 'font-semibold' : ''}`}
               style={{ color: tier.color }}
             >
               -{tier.percent}%
             </span>
-            <span className="flex-1 text-right text-[13px] font-bold tracking-tight" style={{ color: tier.color }}>
+            <span className="flex-1 text-right text-[12px] font-bold tracking-tight" style={{ color: tier.color }}>
               {fmt(calcMemberPrice(promoPrice, tier.percent, rounding))}
             </span>
           </div>
