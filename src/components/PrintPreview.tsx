@@ -131,6 +131,32 @@ export function PrintPreview({
                     <option value={1000}>1.000đ</option>
                   </select>
                 </div>
+
+                <div className="border-t border-gray-200 pt-2 mt-1 flex flex-col gap-1.5">
+                  <button
+                    onClick={() => onUpdateTemplateOptions({ showName: !activeTemplate.showName })}
+                    className="flex items-center justify-between py-0.5 hover:text-gray-900"
+                  >
+                    <span>Hiện tên sản phẩm</span>
+                    {activeTemplate.showName !== false ? (
+                      <ToggleRight className="w-5 h-5 text-blue-600" />
+                    ) : (
+                      <ToggleLeft className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => onUpdateTemplateOptions({ showSku: !activeTemplate.showSku })}
+                    className="flex items-center justify-between py-0.5 hover:text-gray-900"
+                  >
+                    <span>Hiện mã SKU sản phẩm</span>
+                    {activeTemplate.showSku !== false ? (
+                      <ToggleRight className="w-5 h-5 text-blue-600" />
+                    ) : (
+                      <ToggleLeft className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
             ) : (
             <>

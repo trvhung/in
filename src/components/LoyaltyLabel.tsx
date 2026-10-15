@@ -24,34 +24,54 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
   const rounding = template.loyaltyRounding ?? 1000;
   const listPrice = product.comparePrice || 0;
   const promoPrice = product.price > 0 ? product.price : listPrice;
+  const showName = template.showName !== false;
+  const showSku = template.showSku !== false;
 
   const tiers = [
-    { label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[17px] font-bold' },
-    { label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[17px] font-bold' },
+    { label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[16px] font-bold' },
+    { label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[16px] font-bold' },
     { label: 'VVIP', percent: percents.vvip, color: '#111111', labelClass: 'text-[11.5px] font-normal' },
   ];
 
   return (
     <div
-      className={`bg-white text-black flex flex-col overflow-hidden relative select-none border border-gray-300 px-[9px] pt-[5px] pb-[3px] ${className}`}
+      className={`bg-white text-black flex flex-col overflow-hidden relative select-none border border-gray-300 px-[9px] pt-[4px] pb-[3px] ${className}`}
       style={{ width: template.width, height: template.height, pageBreakInside: 'avoid' }}
     >
       <div className="flex justify-center">
-        <img src={elmichLogo} alt="Elmich" className="h-[18px] w-auto" />
+        <img src={elmichLogo} alt="Elmich" className="h-[15px] w-auto" />
       </div>
 
-      <div className="text-center text-[14px] font-bold tracking-[0.03em] leading-none mt-[3px] whitespace-nowrap">
+      <div className="text-center text-[12.5px] font-bold tracking-[0.03em] leading-none mt-[2px] whitespace-nowrap">
         GIÁ ĐẶC QUYỀN THÀNH VIÊN
       </div>
 
-      <div className="flex justify-between items-baseline mt-[4px] leading-none text-[9.5px]">
-        <div className="flex items-baseline gap-1">
-          <span>Giá NY:</span>
-          <span className="text-[12px] font-semibold">{fmt(listPrice)}</span>
+      <div className="mt-[2.5px] leading-tight">
+        <div className="flex justify-between items-baseline gap-2">
+          {showName && product.name ? (
+            <div className="flex-1 min-w-0 font-bold text-[9.5px] text-gray-900 truncate uppercase" title={product.name}>
+              {product.name}
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
+          {showSku && product.sku && (
+            <div className="shrink-0 text-[8.5px] font-medium text-gray-600 font-mono">
+              <span>SKU: </span>
+              <span className="font-bold text-gray-900">{product.sku}</span>
+            </div>
+          )}
         </div>
-        <div className="flex items-baseline gap-1">
-          <span className="font-bold">Giá KM:</span>
-          <span className="text-[12px] font-bold">{fmt(promoPrice)}</span>
+
+        <div className="flex justify-between items-baseline mt-[1px] text-[8.5px] leading-none">
+          <div className="flex items-baseline gap-1">
+            <span className="text-gray-500">Giá NY:</span>
+            <span className="text-[11px] font-semibold text-gray-800">{fmt(listPrice)}</span>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="font-bold text-gray-800">Giá KM:</span>
+            <span className="text-[11.5px] font-bold text-gray-950">{fmt(promoPrice)}</span>
+          </div>
         </div>
       </div>
 
