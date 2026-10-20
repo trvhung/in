@@ -45,17 +45,16 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
         GIÁ ĐẶC QUYỀN THÀNH VIÊN
       </div>
 
-      {(product.name || (showSku && product.sku)) && (
-        <div className="flex items-baseline gap-2 mt-[4px] leading-[1.15]">
-          <div className="flex-1 min-w-0 truncate text-[9.5px] font-bold text-gray-900 uppercase" title={product.name}>
-            {product.name}
-          </div>
-          {showSku && product.sku && (
-            <div className="shrink-0 text-[10px] font-semibold text-gray-700 font-mono tracking-wide">
-              <span>SKU: </span>
-              <span className="font-bold text-gray-900">{product.sku}</span>
-            </div>
-          )}
+      {product.name && (
+        <div className="truncate text-center text-[9.5px] font-bold text-gray-900 uppercase mt-[4px] leading-[1.15]" title={product.name}>
+          {product.name}
+        </div>
+      )}
+
+      {showSku && product.sku && (
+        <div className="text-center text-[10px] font-semibold text-gray-700 font-mono tracking-wide mt-[2px] leading-none">
+          <span>SKU: </span>
+          <span className="font-bold text-gray-900">{product.sku}</span>
         </div>
       )}
 
