@@ -134,6 +134,17 @@ export function PrintPreview({
 
                 <div className="border-t border-gray-200 pt-2 mt-1 flex flex-col gap-1.5">
                   <button
+                    onClick={() => onUpdateTemplateOptions({ showPrice: activeTemplate.showPrice === false })}
+                    className="flex items-center justify-between py-0.5 hover:text-gray-900"
+                  >
+                    <span>Hiện giá bán (Giá KM)</span>
+                    {activeTemplate.showPrice !== false ? (
+                      <ToggleRight className="w-5 h-5 text-blue-600" />
+                    ) : (
+                      <ToggleLeft className="w-5 h-5 text-gray-400" />
+                    )}
+                  </button>
+                  <button
                     onClick={() => onUpdateTemplateOptions({ showSku: !activeTemplate.showSku })}
                     className="flex items-center justify-between py-0.5 hover:text-gray-900"
                   >

@@ -23,8 +23,8 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
   const percents = { ...DEFAULT_LOYALTY_PERCENTS, ...template.loyaltyPercents };
   const rounding = template.loyaltyRounding ?? 1000;
   const listPrice = product.comparePrice || 0;
-  const hasPromo = product.price > 0;
-  // Không có giá bán → ẩn Giá KM, giá thành viên tính theo Giá NY
+  const hasPromo = template.showPrice !== false && product.price > 0;
+  // Tắt hiện giá bán hoặc không có giá bán → ẩn Giá KM, giá thành viên tính theo Giá NY
   const promoPrice = hasPromo ? product.price : listPrice;
   const showSku = template.showSku !== false;
 
