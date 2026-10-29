@@ -23,7 +23,9 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
   const percents = { ...DEFAULT_LOYALTY_PERCENTS, ...template.loyaltyPercents };
   const rounding = template.loyaltyRounding ?? 1000;
   const listPrice = product.comparePrice || 0;
-  const promoPrice = product.price > 0 ? product.price : listPrice;
+  const hasPromo = product.price > 0;
+  // Không có giá bán → ẩn Giá KM, giá thành viên tính theo Giá NY
+  const promoPrice = hasPromo ? product.price : listPrice;
   const showSku = template.showSku !== false;
 
   const tiers = [
@@ -58,15 +60,17 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
         </div>
       )}
 
-      <div className="flex justify-between items-baseline mt-[5px] text-[8.5px] leading-none">
+      <div className={`flex ${hasPromo ? 'justify-between' : 'justify-center'} items-baseline mt-[5px] text-[8.5px] leading-none`}>
         <div className="flex items-baseline gap-1">
           <span className="text-gray-500">Giá NY:</span>
           <span className="text-[11.5px] font-semibold text-gray-800">{fmt(listPrice)}</span>
         </div>
-        <div className="flex items-baseline gap-1">
-          <span className="font-bold text-gray-800">Giá KM:</span>
-          <span className="text-[12px] font-bold text-gray-950">{fmt(promoPrice)}</span>
-        </div>
+        {hasPromo && (
+          <div className="flex items-baseline gap-1">
+            <span className="font-bold text-gray-800">Giá KM:</span>
+            <span className="text-[12px] font-bold text-gray-950">{fmt(promoPrice)}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 flex flex-col mt-[5px] border-t border-[#6B7194]">
