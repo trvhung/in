@@ -2,9 +2,12 @@ import { jsPDF } from 'jspdf';
 import JsBarcode from 'jsbarcode';
 import * as XLSX from 'xlsx';
 
-// ── Tem 60×45mm, mỗi trang PDF = 1 tem ──
+// ── Nội dung tem thiết kế ngang 60×45mm, khi in xoay 90° (tem dọc 45×60mm) ──
+// Mỗi trang PDF = 1 hàng 2 tem
 const LABEL_W = 60;
 const LABEL_H = 45;
+const PER_ROW = 2;
+export const DEFAULT_KLN_GAP = 2; // mm giữa 2 tem
 
 // ── Barcode (ngang, căn giữa) ──
 const BC_W = 50;       // mm
@@ -32,49 +35,59 @@ export async function parseKlnFile(file: File): Promise<string[]> {
   return body.map((r) => String(r[col] ?? '').trim()).filter(Boolean);
 }
 
-/** Vẽ barcode CODE128 bằng hình chữ nhật vector để in sắc nét */
-function drawBarcode(doc: jsPDF, code: string, x: number, y: number, w: number, h: number) {
+const PT_TO_MM = 25.4 / 72;
+const CAP_HEIGHT = 0.72; // tỉ lệ chiều cao chữ hoa Helvetica so với cỡ chữ
+
+/**
+ * Vẽ 1 tem xoay 90° theo chiều kim đồng hồ vào ô dọc (LABEL_H × LABEL_W) tại (cellX, cellY).
+ * Toạ độ thiết kế (u, v) trong khung ngang 60×45 → trang: x = cellX + LABEL_H - v, y = cellY + u
+ */
+function drawLabel(doc: jsPDF, code: string, cellX: number, cellY: number) {
+  // Barcode CODE128 vẽ bằng hình chữ nhật vector để in sắc nét (vạch nằm ngang sau khi xoay)
   const data: { encodings?: { data: string }[] } = {};
   JsBarcode(data, code, { format: 'CODE128' });
   const bits = (data.encodings ?? []).map((e) => e.data).join('');
-  const module = w / bits.length;
+  const module = BC_W / bits.length;
+  const bcU = (LABEL_W - BC_W) / 2;
 
   let i = 0;
   while (i < bits.length) {
     if (bits[i] === '1') {
       let j = i;
       while (j < bits.length && bits[j] === '1') j++;
-      doc.rect(x + i * module, y, (j - i) * module, h, 'F');
+      doc.rect(cellX + LABEL_H - BC_TOP - BC_H, cellY + bcU + i * module, BC_H, (j - i) * module, 'F');
       i = j;
     } else {
       i++;
     }
   }
+
+  // Mã vị trí dưới barcode, căn giữa
+  let size = TEXT_SIZE;
+  doc.setFontSize(size);
+  while (size > 8 && doc.getTextWidth(code) > TEXT_MAX_W) {
+    size -= 1;
+    doc.setFontSize(size);
+  }
+  const textU = (LABEL_W - doc.getTextWidth(code)) / 2;
+  const baselineV = BC_TOP + BC_H + TEXT_GAP + size * PT_TO_MM * CAP_HEIGHT;
+  doc.text(code, cellX + LABEL_H - baselineV, cellY + textU, { angle: -90 });
 }
 
-export function generateKlnPDF(codes: string[], copies = 1): Blob {
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [LABEL_W, LABEL_H] });
+export function generateKlnPDF(codes: string[], copies = 1, gap = DEFAULT_KLN_GAP): Blob {
+  const pageW = PER_ROW * LABEL_H + (PER_ROW - 1) * gap;
+  const pageH = LABEL_W;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [pageW, pageH] });
   doc.setFillColor(0, 0, 0);
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
 
-  let first = true;
-  for (const code of codes) {
-    for (let c = 0; c < copies; c++) {
-      if (!first) doc.addPage([LABEL_W, LABEL_H], 'landscape');
-      first = false;
-
-      drawBarcode(doc, code, (LABEL_W - BC_W) / 2, BC_TOP, BC_W, BC_H);
-
-      let size = TEXT_SIZE;
-      doc.setFontSize(size);
-      while (size > 8 && doc.getTextWidth(code) > TEXT_MAX_W) {
-        size -= 1;
-        doc.setFontSize(size);
-      }
-      doc.text(code, LABEL_W / 2, BC_TOP + BC_H + TEXT_GAP, { align: 'center', baseline: 'top' });
-    }
-  }
+  const labels = codes.flatMap((code) => Array<string>(copies).fill(code));
+  labels.forEach((code, i) => {
+    const col = i % PER_ROW;
+    if (i > 0 && col === 0) doc.addPage([pageW, pageH], 'landscape');
+    drawLabel(doc, code, col * (LABEL_H + gap), 0);
+  });
 
   return doc.output('blob');
 }
@@ -90,9 +103,9 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function downloadKlnPDF(codes: string[], copies = 1) {
+export function downloadKlnPDF(codes: string[], copies = 1, gap = DEFAULT_KLN_GAP) {
   const name = codes.length === 1 ? codes[0] : `${codes[0]}_${codes[codes.length - 1]}`;
-  downloadBlob(generateKlnPDF(codes, copies), `tem-kln-${name}.pdf`);
+  downloadBlob(generateKlnPDF(codes, copies, gap), `tem-kln-${name}.pdf`);
 }
 
 /** File mẫu: cột Vitri */

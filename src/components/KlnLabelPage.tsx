@@ -2,11 +2,11 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import JsBarcode from 'jsbarcode';
 import { ArrowLeft, Download, Eye, FileSpreadsheet, Upload, X } from 'lucide-react';
-import { downloadKlnPDF, downloadKlnTemplate, parseKlnFile } from '../utils/generateKlnPDF';
+import { DEFAULT_KLN_GAP, downloadKlnPDF, downloadKlnTemplate, parseKlnFile } from '../utils/generateKlnPDF';
 
 const PREVIEW_LIMIT = 6;
 
-/** Xem trước tem 60×45mm (4px = 1mm), bố cục khớp với PDF */
+/** Xem trước tem 60×45mm (4px = 1mm) xoay 90° thành tem dọc 45×60mm, bố cục khớp với PDF */
 function KlnLabelPreview({ code }: { code: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -23,16 +23,18 @@ function KlnLabelPreview({ code }: { code: string }) {
   }, [code]);
 
   return (
-    <div
-      className="bg-white border border-gray-300 rounded-md flex flex-col items-center shrink-0"
-      style={{ width: 240, height: 180, paddingTop: 20 }}
-    >
-      <svg ref={svgRef} />
+    <div className="bg-white border border-gray-300 rounded-md relative overflow-hidden shrink-0" style={{ width: 180, height: 240 }}>
       <div
-        className="font-bold text-black whitespace-nowrap leading-none"
-        style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 29, marginTop: 10 }}
+        className="absolute flex flex-col items-center"
+        style={{ width: 240, height: 180, left: -30, top: 30, paddingTop: 20, transform: 'rotate(90deg)' }}
       >
-        {code}
+        <svg ref={svgRef} />
+        <div
+          className="font-bold text-black whitespace-nowrap leading-none"
+          style={{ fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 29, marginTop: 10 }}
+        >
+          {code}
+        </div>
       </div>
     </div>
   );
@@ -44,6 +46,7 @@ export function KlnLabelPage() {
   const [fileName, setFileName] = useState('');
   const [codes, setCodes] = useState<string[]>([]);
   const [copies, setCopies] = useState(1);
+  const [gap, setGap] = useState(DEFAULT_KLN_GAP);
   const [error, setError] = useState('');
 
   const handleFile = async (file: File | undefined) => {
@@ -75,7 +78,7 @@ export function KlnLabelPage() {
 
   const handleDownload = () => {
     try {
-      downloadKlnPDF(codes, copies);
+      downloadKlnPDF(codes, copies, gap);
     } catch (err) {
       console.error('Download failed:', err);
       alert('Có lỗi khi tạo file. Vui lòng thử lại.');
@@ -83,6 +86,7 @@ export function KlnLabelPage() {
   };
 
   const total = codes.length * copies;
+  const previewLabels = codes.flatMap((code) => Array<string>(copies).fill(code)).slice(0, PREVIEW_LIMIT);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
@@ -160,16 +164,29 @@ export function KlnLabelPage() {
             {error && <div className="text-xs text-red-600 mt-1.5">{error}</div>}
           </div>
 
-          {/* Copies */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Số tem mỗi mã</label>
-            <input
-              type="number"
-              min={1}
-              value={copies}
-              onChange={(e) => setCopies(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-full bg-white border border-gray-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-            />
+          {/* Copies + Gap */}
+          <div className="mb-6 grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">Số tem mỗi mã</label>
+              <input
+                type="number"
+                min={1}
+                value={copies}
+                onChange={(e) => setCopies(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full bg-white border border-gray-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">Khoảng cách 2 tem (mm)</label>
+              <input
+                type="number"
+                min={0}
+                step={0.5}
+                value={gap}
+                onChange={(e) => setGap(Math.max(0, parseFloat(e.target.value) || 0))}
+                className="w-full bg-white border border-gray-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+            </div>
           </div>
 
           {/* Preview */}
@@ -178,16 +195,22 @@ export function KlnLabelPage() {
               <div className="flex items-center gap-1.5 mb-2">
                 <Eye className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-xs text-gray-500 font-medium">Xem trước</span>
-                <span className="text-[10px] text-gray-400">— tem 60×45mm, mỗi trang PDF 1 tem</span>
+                <span className="text-[10px] text-gray-400">
+                  — tem dọc 45×60mm, mỗi trang PDF 1 hàng 2 tem ({(90 + gap).toFixed(1).replace(/\.0$/, '')}×60mm)
+                </span>
               </div>
-              <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-4 flex flex-wrap justify-center gap-3">
-                {codes.slice(0, PREVIEW_LIMIT).map((code, i) => (
-                  <Fragment key={`${code}-${i}`}><KlnLabelPreview code={code} /></Fragment>
+              <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center gap-3">
+                {Array.from({ length: Math.ceil(previewLabels.length / 2) }, (_, row) => (
+                  <div key={row} className="flex" style={{ gap: gap * 4 }}>
+                    {previewLabels.slice(row * 2, row * 2 + 2).map((code, i) => (
+                      <Fragment key={`${code}-${i}`}><KlnLabelPreview code={code} /></Fragment>
+                    ))}
+                  </div>
                 ))}
               </div>
-              {codes.length > PREVIEW_LIMIT && (
+              {total > PREVIEW_LIMIT && (
                 <div className="text-xs text-gray-400 text-center mt-1.5">
-                  … và {codes.length - PREVIEW_LIMIT} mã khác
+                  … và {total - PREVIEW_LIMIT} tem khác
                 </div>
               )}
             </div>
