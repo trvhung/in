@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Printer, Package } from 'lucide-react';
+import { Printer, Package, MapPin } from 'lucide-react';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -40,6 +40,19 @@ export function HomePage() {
           <div>
             <div className="font-bold text-lg">TẠO TEM PALLET</div>
             <div className="text-sm text-gray-500">PLT-mmyy-xxxxx</div>
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigate('/kln')}
+          className="bg-white border-2 border-violet-500 hover:bg-violet-50 text-gray-800 rounded-2xl p-6 shadow-sm transition-all active:scale-[0.98] cursor-pointer text-left flex items-center gap-4 group"
+        >
+          <div className="bg-violet-100 text-violet-600 p-3 rounded-xl group-hover:bg-violet-200 transition-colors">
+            <MapPin className="w-8 h-8" />
+          </div>
+          <div>
+            <div className="font-bold text-lg">TẠO TEM KLN</div>
+            <div className="text-sm text-gray-500">Tem vị trí 60×45mm từ file Excel</div>
           </div>
         </button>
       </div>
