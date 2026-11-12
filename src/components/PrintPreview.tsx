@@ -1,6 +1,6 @@
 import { LabelTemplate, Product } from '../types';
 import { Barcode } from './Barcode';
-import { LoyaltyLabel, DEFAULT_LOYALTY_PERCENTS } from './LoyaltyLabel';
+import { LoyaltyLabel, DEFAULT_LOYALTY_PERCENTS, DEFAULT_LOYALTY_TIERS } from './LoyaltyLabel';
 import { Printer, Settings, Check, LayoutGrid, ToggleLeft, ToggleRight, Info } from 'lucide-react';
 import { useState } from 'react';
 
@@ -26,6 +26,7 @@ export function PrintPreview({
   const [showSettings, setShowSettings] = useState(false);
   const isLoyalty = activeTemplate.id.startsWith('loyalty-');
   const loyaltyPercents = { ...DEFAULT_LOYALTY_PERCENTS, ...activeTemplate.loyaltyPercents };
+  const loyaltyTiers = { ...DEFAULT_LOYALTY_TIERS, ...activeTemplate.loyaltyTiers };
 
   // Compute total number of labels to print
   const totalLabels = products.reduce((acc, p) => acc + p.quantity, 0);
@@ -104,19 +105,35 @@ export function PrintPreview({
                   ['vvip', 'VVIP'],
                 ] as const).map(([key, label]) => (
                   <div key={key} className="flex items-center justify-between gap-2">
-                    <span>Giảm {label} (%)</span>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={loyaltyPercents[key]}
-                      onChange={(e) =>
-                        onUpdateTemplateOptions({
-                          loyaltyPercents: { ...loyaltyPercents, [key]: Number(e.target.value) },
-                        })
-                      }
-                      className="w-16 text-xs bg-white border border-gray-200 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-                    />
+                    <span className={loyaltyTiers[key] ? '' : 'text-gray-400 line-through'}>Giảm {label} (%)</span>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={loyaltyPercents[key]}
+                        disabled={!loyaltyTiers[key]}
+                        onChange={(e) =>
+                          onUpdateTemplateOptions({
+                            loyaltyPercents: { ...loyaltyPercents, [key]: Number(e.target.value) },
+                          })
+                        }
+                        className="w-16 text-xs bg-white border border-gray-200 rounded-lg py-1 px-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 disabled:bg-gray-100 disabled:text-gray-400"
+                      />
+                      <button
+                        onClick={() =>
+                          onUpdateTemplateOptions({ loyaltyTiers: { ...loyaltyTiers, [key]: !loyaltyTiers[key] } })
+                        }
+                        className="hover:text-gray-900"
+                        title={loyaltyTiers[key] ? `Ẩn dòng ${label}` : `Hiện dòng ${label}`}
+                      >
+                        {loyaltyTiers[key] ? (
+                          <ToggleRight className="w-5 h-5 text-blue-600" />
+                        ) : (
+                          <ToggleLeft className="w-5 h-5 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 ))}
                 <div className="flex items-center justify-between gap-2">

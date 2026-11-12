@@ -2,6 +2,7 @@ import { LabelTemplate, Product } from '../types';
 import elmichLogo from '../assets/elmich-logo.svg';
 
 export const DEFAULT_LOYALTY_PERCENTS = { member: 10, vip: 13, vvip: 15 };
+export const DEFAULT_LOYALTY_TIERS = { member: true, vip: true, vvip: true };
 
 // Giá thành viên = Giá KM giảm thêm x%, làm tròn theo bước (vd 1.000đ)
 export function calcMemberPrice(base: number, percent: number, rounding = 1000) {
@@ -28,11 +29,13 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
   const promoPrice = hasPromo ? product.price : listPrice;
   const showSku = template.showSku !== false;
 
+  const enabled = { ...DEFAULT_LOYALTY_TIERS, ...template.loyaltyTiers };
+
   const tiers = [
-    { label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[13.5px] font-bold' },
-    { label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[13.5px] font-bold' },
-    { label: 'VVIP', percent: percents.vvip, color: '#111111', labelClass: 'text-[10.5px] font-normal' },
-  ];
+    { key: 'member', label: 'Member', percent: percents.member, color: '#E31E24', labelClass: 'text-[13.5px] font-bold', valueClass: 'font-semibold' },
+    { key: 'vip', label: 'VIP', percent: percents.vip, color: '#F7941D', labelClass: 'text-[13.5px] font-bold', valueClass: 'font-semibold' },
+    { key: 'vvip', label: 'VVIP', percent: percents.vvip, color: '#111111', labelClass: 'text-[10.5px] font-normal', valueClass: '' },
+  ].filter((t) => enabled[t.key as keyof typeof enabled]);
 
   return (
     <div
@@ -83,7 +86,7 @@ export function LoyaltyLabel({ product, template, className = '' }: LoyaltyLabel
               {tier.label}
             </span>
             <span
-              className={`w-[20%] text-[10px] ${i < 2 ? 'font-semibold' : ''}`}
+              className={`w-[20%] text-[10px] ${tier.valueClass}`}
               style={{ color: tier.color }}
             >
               -{tier.percent}%
